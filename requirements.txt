@@ -7,3 +7,5 @@ sqlalchemy
 python-jose
 passlib[bcrypt]
 python-multipart
+pyotp
+pyqrcode

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 class BaseUser(BaseModel):
@@ -8,7 +10,8 @@ class UserCreate(BaseUser):
     password: str
 
 class User(BaseUser):
-    id: int
+    id: Optional[int]
+    google_auth_secret: Optional[str]
 
     class Config:
         from_attributes = True
