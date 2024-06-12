@@ -1,5 +1,6 @@
 import base64
 import os
+import secrets
 from datetime import datetime, timedelta
 
 import pyqrcode as pyqrcode
@@ -19,10 +20,6 @@ from ..settings import settings
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/sign-in')
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> models.User:
-    return await AuthService.validate_token(token)
-
-
 class AuthService:
     @classmethod
     def verify_password(cls, plain_password: str, hashed_password: str) -> bool:
@@ -34,7 +31,7 @@ class AuthService:
 
     @classmethod
     def validate_token(cls, token: str) -> models.User:
-        exeption = HTTPException(
+        exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Could not validate credentials',
             headers={
@@ -49,14 +46,14 @@ class AuthService:
                 algorithms=[settings.jwt_algorithm],
             )
         except JWTError:
-            raise exeption from None
+            raise exception from None
 
         user_data = payload.get('user')
 
         try:
             user = models.User.parse_obj(user_data)
         except ValueError:
-            raise exeption from None
+            raise exception from None
 
         return user
 
@@ -81,10 +78,15 @@ class AuthService:
 
         return models.Token(access_token=token)
 
+    def save_session(self, session_id: str, user_id: int):
+        session = tables.Session(id=session_id, user_id=user_id)
+        self.session.add(session)
+        self.session.commit()
+
     def __init__(self, session: Session = Depends(get_session)):
         self.session = session
 
-    async def register_new_user(self, user_data: models.UserCreate) -> models.Token:
+    async def register_new_user(self, user_data: models.UserCreate):
         existing_user = self.session.query(tables.User).filter(
             (tables.User.username == user_data.username) |
             (tables.User.email == user_data.email)
@@ -112,11 +114,10 @@ class AuthService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="User with this username or email already exists"
             )
-
-        return self.create_token(user)
+        return user.id
 
     async def authenticate_user(self, username: str, password: str):
-        exeption = HTTPException(
+        exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Incorrect username or password',
             headers={
@@ -131,18 +132,20 @@ class AuthService:
             .first()
         )
         if not user:
-            raise exeption
+            raise exception
 
         if not self.verify_password(password, user.password_hash):
-            raise exeption
+            raise exception
 
-        return user.username
+        session_id = secrets.token_hex(16)
+        self.save_session(session_id, user.id)
+        return session_id
 
-    async def generate_qr(self, username: str) -> BytesIO:
+    async def generate_qr(self, user_id: int) -> BytesIO:
         user = (
             self.session
             .query(tables.User)
-            .filter(tables.User.username == username)
+            .filter(tables.User.id == user_id)
             .first()
         )
         uri = f'otpauth://totp/MyApp:{user.username}?secret={user.google_auth_secret}&issuer=MyApp'
@@ -152,14 +155,21 @@ class AuthService:
         stream.seek(0)
         return stream
 
-    async def verify_otp(self, username: str, otp: str) -> models.Token:
+    async def verify_otp(self, session_id: str, otp: str) -> models.Token:
+        user_id = (
+            self.session
+            .query(tables.Session.user_id)
+            .filter(tables.Session.id == session_id)
+            .scalar()
+        )
+
         user = (
             self.session
             .query(tables.User)
-            .filter(tables.User.username == username)
+            .filter(tables.User.id == user_id)
             .first()
         )
-        exeption = HTTPException(
+        exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Incorrect otp',
             headers={
@@ -169,5 +179,5 @@ class AuthService:
         user_secret = user.google_auth_secret
         totp = TOTP(user_secret)
         if not totp.verify(otp):
-            raise exeption
+            raise exception
         return self.create_token(user)

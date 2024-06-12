@@ -7,21 +7,21 @@ from ..models.auth import (
     UserCreate,
     Token,
 )
-from ..services.auth import AuthService, get_current_user
+from ..services.auth import AuthService
 
 router = APIRouter(
     prefix='/auth',
 )
 
 
-@router.post('/sign-up', response_model=Token)
+@router.post('/sign-up')
 async def sign_up(user_data: UserCreate, service: AuthService = Depends()):
     return await service.register_new_user(user_data)
 
 
 @router.post('/qr')
-async def get_qr_code(form_data: OAuth2PasswordRequestForm = Depends(), service: AuthService = Depends()):
-    return StreamingResponse(await service.generate_qr(form_data.username), media_type="image/png")
+async def get_qr_code(user_id, service: AuthService = Depends()):
+    return StreamingResponse(await service.generate_qr(user_id), media_type="image/png")
 
 
 @router.post('/sign-in')
@@ -33,10 +33,7 @@ async def sign_in(form_data: OAuth2PasswordRequestForm = Depends(), service: Aut
 
 
 @router.post('/verify-otp', response_model=Token)
-async def verify_otp(username: str, otp_code: str, service: AuthService = Depends()):
-    return await service.verify_otp(username, otp_code)
+async def verify_otp(session_id: str, otp_code: str, service: AuthService = Depends()):
+    return await service.verify_otp(session_id, otp_code)
 
 
-@router.get('/user', response_model=User)
-def get_user(user: User = Depends(get_current_user)):
-    return user
