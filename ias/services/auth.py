@@ -114,7 +114,9 @@ class AuthService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="User with this username or email already exists"
             )
-        return user.id
+        session_id = secrets.token_hex(16)
+        self.save_session(session_id, user.id)
+        return session_id
 
     async def authenticate_user(self, username: str, password: str):
         exception = HTTPException(
@@ -141,7 +143,14 @@ class AuthService:
         self.save_session(session_id, user.id)
         return session_id
 
-    async def generate_qr(self, user_id: int) -> BytesIO:
+    async def generate_qr(self, session_id: str) -> BytesIO:
+        user_id = (
+            self.session
+            .query(tables.Session.user_id)
+            .filter(tables.Session.id == session_id)
+            .scalar()
+        )
+
         user = (
             self.session
             .query(tables.User)
