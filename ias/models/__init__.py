@@ -3,3 +3,9 @@ from .auth import (
     User,
     UserCreate,
 )
+
+from .course import (
+    BaseCourse,
+    Course,
+    CourseUpdate,
+)

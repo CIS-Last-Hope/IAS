@@ -3,7 +3,6 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import StreamingResponse
 
 from ..models.auth import (
-    User,
     UserCreate,
     Token,
 )
@@ -20,8 +19,8 @@ async def sign_up(user_data: UserCreate, service: AuthService = Depends()):
 
 
 @router.post('/qr')
-async def get_qr_code(user_id, service: AuthService = Depends()):
-    return StreamingResponse(await service.generate_qr(user_id), media_type="image/png")
+async def get_qr_code(session_id: str, service: AuthService = Depends()):
+    return StreamingResponse(await service.generate_qr(session_id), media_type="image/png")
 
 
 @router.post('/sign-in')
