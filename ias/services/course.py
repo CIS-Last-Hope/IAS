@@ -15,7 +15,7 @@ class CourseService:
     def __init__(self, session: Session = Depends(get_session)):
         self.session = session
 
-    async def create_new_course(self, course: models.BaseCourse, user_id: int) -> models.CourseCreate:
+    async def create_new_course(self, course: models.BaseCourse, user_id: int) -> models.Course:
         existing_course = self.session.query(tables.Course).filter(
             (tables.Course.title == course.title)
         ).first()
@@ -101,5 +101,67 @@ class CourseService:
 
         archive_path = course_dir.with_suffix('.zip')
         shutil.make_archive(str(course_dir), 'zip', root_dir=str(course_dir))
+
         return str(archive_path)
 
+    async def delete_course(self, course_id: int, user_id: int):
+        course = self.session.query(tables.Course).filter(
+            tables.Course.id == course_id
+        ).first()
+
+        exception = HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Course not found"
+        )
+        if not course:
+            raise exception
+
+        exception = HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to delete this course"
+        )
+        if course.creator_id != user_id:
+            raise exception
+
+        course_dir = Path(f"uploads/{course_id}")
+        if course_dir.exists():
+            shutil.rmtree(course_dir)
+
+        self.session.delete(course)
+        self.session.commit()
+
+    async def update_course(self, course_id: int, course_data: models.CourseUpdate, user_id: int) -> models.Course:
+        course = self.session.query(tables.Course).filter(
+            tables.Course.id == course_id
+        ).first()
+
+        exception = HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Course not found"
+        )
+        if not course:
+            raise exception
+
+        exception = HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to update this course"
+        )
+        if course.creator_id != user_id:
+            raise exception
+
+        if course_data.title:
+            course.title = course_data.title
+        if course_data.description:
+            course.description = course_data.description
+
+        exception = HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Bad request"
+        )
+        try:
+            self.session.commit()
+        except ValueError:
+            self.session.rollback()
+            raise exception
+
+        return course

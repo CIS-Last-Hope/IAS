@@ -6,5 +6,6 @@ from .auth import (
 
 from .course import (
     BaseCourse,
-    CourseCreate,
+    Course,
+    CourseUpdate,
 )

@@ -8,6 +8,17 @@ class BaseCourse(BaseModel):
     description: str
 
 
-class CourseCreate(BaseCourse):
+class CourseUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class Course(BaseCourse):
+    id: int
     creator_id: int
-    
+
+    class Config:
+        from_attributes = True

@@ -39,7 +39,7 @@ class Course(Base):
     creator_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"), nullable=False)
 
     creator = relationship("User", back_populates="courses")
-    materials = relationship("Material", back_populates="course")
+    materials = relationship("Material", back_populates="course", cascade="all, delete-orphan")
 
 
 class Material(Base):
