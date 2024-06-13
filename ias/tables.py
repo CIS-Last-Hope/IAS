@@ -39,6 +39,17 @@ class Course(Base):
     creator_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"), nullable=False)
 
     creator = relationship("User", back_populates="courses")
+    materials = relationship("Material", back_populates="course")
+
+
+class Material(Base):
+    __tablename__ = 'materials'
+    id = sa.Column(sa.Integer, primary_key=True, index=True)
+    filename = sa.Column(sa.String, nullable=False)
+    filepath = sa.Column(sa.String, nullable=False)
+    course_id = sa.Column(sa.Integer, sa.ForeignKey("courses.id"), nullable=False)
+
+    course = relationship("Course", back_populates="materials")
 
 
 Base.metadata.create_all(bind=engine)
