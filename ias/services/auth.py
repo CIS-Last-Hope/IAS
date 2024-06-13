@@ -17,7 +17,9 @@ from .. import tables, models
 from ..database import get_session
 from ..settings import settings
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/sign-in')
+
+def get_current_user(token: str) -> models.User:
+    return AuthService.validate_token(token)
 
 
 class AuthService:
@@ -112,7 +114,7 @@ class AuthService:
             self.session.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User with this username or email already exists"
+                detail="Bad request"
             )
         session_id = secrets.token_hex(16)
         self.save_session(session_id, user.id)

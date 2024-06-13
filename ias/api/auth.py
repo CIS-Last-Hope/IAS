@@ -3,7 +3,6 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import StreamingResponse
 
 from ..models.auth import (
-    User,
     UserCreate,
     Token,
 )
