@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Depends, UploadFile, File
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from fastapi.responses import FileResponse, JSONResponse
 
 from ..models import BaseCourse, User, CourseUpdate, Course
 from ..services.auth import get_current_user
 from ..services.course import CourseService
+
+from typing import List
+
 
 router = APIRouter(
     prefix='/course',
@@ -47,3 +50,13 @@ async def update_course(course_id: int,
                         current_user: User = Depends(get_current_user),
                         service: CourseService = Depends()):
     return await service.update_course(course_id, course_data, current_user.id)
+
+@router.get('/{course_id}/recommendations', response_model=List[Course])
+async def get_recommendations(course_id: int,
+                              current_user: User = Depends(get_current_user),
+                              service: CourseService = Depends()):
+    try:
+        recommended_courses = await service.recommend_courses(course_id)
+        return recommended_courses
+    except HTTPException as e:
+        return JSONResponse(status_code=e.status_code, content={"detail": e.detail})

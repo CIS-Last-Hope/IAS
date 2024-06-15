@@ -7,8 +7,17 @@ from sqlalchemy.orm import Session
 from .. import tables, models
 from ..database import get_session
 
+from typing import List
+import torch
+from sentence_transformers import SentenceTransformer, util
+from transformers import BertTokenizer, BertModel
+from sklearn.metrics.pairwise import cosine_similarity
+
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True, parents=True)
+
+# Загрузка предварительно обученной модели Sentence-BERT
+sbert_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
 
 class CourseService:
@@ -165,3 +174,43 @@ class CourseService:
             raise exception
 
         return course
+
+    async def recommend_courses(self, course_id: int) -> List[models.Course]:
+        # Получаем текущий курс
+        course = self.session.query(tables.Course).filter(
+            tables.Course.id == course_id
+        ).first()
+
+        if not course:
+            raise HTTPException(
+                status_code=404,
+                detail="Course not found"
+            )
+
+        # Получаем все курсы, кроме текущего
+        all_courses = self.session.query(tables.Course).filter(
+            tables.Course.id != course_id
+        ).all()
+
+        if not all_courses:
+            raise HTTPException(
+                status_code=404,
+                detail="No other courses found"
+            )
+
+        # Собираем текстовые описания всех курсов (включая текущий)
+        descriptions = [course.description] + [other_course.description for other_course in all_courses]
+
+        # Получаем эмбеддинги текстов с помощью Sentence-BERT
+        embeddings = sbert_model.encode(descriptions, convert_to_tensor=True)
+
+        # Вычисляем косинусное сходство между текущим курсом и всеми остальными курсами
+        similarity_scores = util.pytorch_cos_sim(embeddings[0], embeddings[1:])
+
+        # Получаем индексы курсов, с которыми текущий курс имеет наибольшее сходство
+        similar_indices = similarity_scores.argsort(descending=True)[0][:3].cpu().numpy()  # берем 5 наиболее похожих курсов
+
+        # Формируем список рекомендуемых курсов
+        recommended_courses = [all_courses[idx] for idx in similar_indices]
+
+        return recommended_courses
