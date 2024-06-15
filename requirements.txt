@@ -11,3 +11,5 @@ pyotp~=2.9.0
 pyqrcode~=1.2.1
 pypng
 jose
+torch
+sentence-transformers

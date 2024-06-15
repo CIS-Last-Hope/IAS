@@ -10,8 +10,6 @@ from ..database import get_session
 from typing import List
 import torch
 from sentence_transformers import SentenceTransformer, util
-from transformers import BertTokenizer, BertModel
-from sklearn.metrics.pairwise import cosine_similarity
 
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True, parents=True)
