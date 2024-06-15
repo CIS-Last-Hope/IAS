@@ -22,3 +22,6 @@ class Course(BaseCourse):
 
     class Config:
         from_attributes = True
+
+class RateCourse(BaseModel):
+    rating: int

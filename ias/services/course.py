@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fastapi import Depends, HTTPException, status, UploadFile
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 
 from .. import tables, models
 from ..database import get_session
@@ -206,9 +207,43 @@ class CourseService:
         similarity_scores = util.pytorch_cos_sim(embeddings[0], embeddings[1:])
 
         # Получаем индексы курсов, с которыми текущий курс имеет наибольшее сходство
-        similar_indices = similarity_scores.argsort(descending=True)[0][:3].cpu().numpy()  # берем 5 наиболее похожих курсов
+        similar_indices = similarity_scores.argsort(descending=True)[0][:3].cpu().numpy()  # берем 3 наиболее похожих курсов
 
         # Формируем список рекомендуемых курсов
         recommended_courses = [all_courses[idx] for idx in similar_indices]
 
         return recommended_courses
+
+    async def rate_course(self, course_id: int, rating: int, user_id: int):
+        if rating < 1 or rating > 5:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Rating must be between 1 and 5"
+            )
+
+        course = self.session.query(tables.Course).filter(tables.Course.id == course_id).first()
+        if not course:
+            raise HTTPException(status_code=404, detail="Course not found")
+
+        existing_rating = self.session.query(tables.CourseRating).filter(
+            tables.CourseRating.course_id == course_id,
+            tables.CourseRating.user_id == user_id
+        ).first()
+
+        if existing_rating:
+            existing_rating.rating = rating
+        else:
+            new_rating = tables.CourseRating(course_id=course_id, user_id=user_id, rating=rating)
+            self.session.add(new_rating)
+
+        self.session.commit()
+        self._update_average_rating(course_id)
+
+    def _update_average_rating(self, course_id: int):
+        average_rating = self.session.query(func.avg(tables.CourseRating.rating)).filter(
+            tables.CourseRating.course_id == course_id
+        ).scalar()
+
+        course = self.session.query(tables.Course).filter(tables.Course.id == course_id).first()
+        course.average_rating = average_rating
+        self.session.commit()

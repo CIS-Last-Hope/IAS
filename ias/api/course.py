@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
 from fastapi.responses import FileResponse, JSONResponse
 
-from ..models import BaseCourse, User, CourseUpdate, Course
+from ..models import BaseCourse, User, CourseUpdate, Course, RateCourse
 from ..services.auth import get_current_user
 from ..services.course import CourseService
+from ..database import get_session
+from sqlalchemy.orm import Session
 
 from typing import List
 
@@ -60,3 +62,11 @@ async def get_recommendations(course_id: int,
         return recommended_courses
     except HTTPException as e:
         return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
+
+@router.post('/{course_id}/rate', status_code=200)
+async def rate_course(course_id: int,
+                      rating: RateCourse,
+                      current_user: User = Depends(get_current_user),
+                      service: CourseService = Depends()):
+    await service.rate_course(course_id, rating.rating, current_user.id)
+    return {"detail": "Rating added successfully"}
