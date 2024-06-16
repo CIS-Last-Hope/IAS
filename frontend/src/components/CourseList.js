@@ -1,16 +1,26 @@
-// src/components/CourseList.js
-
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 function CourseList() {
   const [courses, setCourses] = useState([]);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchCourses = async () => {
-      const response = await axios.get('/api/course');
-      setCourses(response.data);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Token not found');
+        return;
+      }
+
+      try {
+        const response = await axios.get(`http://localhost:8000/course/?token=${token}`);
+        setCourses(response.data);
+      } catch (error) {
+        console.error(error.response?.data);
+        setError('Failed to fetch courses');
+      }
     };
 
     fetchCourses();
@@ -18,17 +28,15 @@ function CourseList() {
 
   return (
     <div>
-      <h2>Courses</h2>
+      <h2>All Courses</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <button>
+        <Link to="/create-course">Create Course</Link>
+      </button>
       <ul>
         {courses.map(course => (
           <li key={course.id}>
-            {course.title} - {course.description}
-            <ul>
-              <li><Link to={`/courses/${course.id}/upload`}>Upload Materials</Link></li>
-              <li><Link to={`/courses/${course.id}/update`}>Update Course</Link></li>
-              <li><Link to={`/courses/${course.id}/rate`}>Rate Course</Link></li>
-              <li><Link to={`/courses/${course.id}/recommendations`}>Recommended Courses</Link></li>
-            </ul>
+            <Link to={`/course/${course.id}`}>{course.title}</Link>
           </li>
         ))}
       </ul>

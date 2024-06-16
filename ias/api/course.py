@@ -14,6 +14,16 @@ router = APIRouter(
     prefix='/course',
 )
 
+@router.get('/', response_model=List[Course])
+async def get_all_courses(
+    current_user: User = Depends(get_current_user),
+    service: CourseService = Depends()
+):
+    try:
+        courses = await service.get_all_courses()
+        return courses
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post('/create', response_model=Course)
 async def create_course(course_data: BaseCourse,
@@ -37,6 +47,17 @@ async def download_material(course_id: int,
     archive_path = await service.download_file(course_id, current_user.id)
     return FileResponse(path=archive_path, filename=f"course_{course_id}_materials.zip")
 
+@router.get('/{course_id}', response_model=Course)
+async def get_course_details(course_id: int,
+                             current_user: User = Depends(get_current_user),
+                             service: CourseService = Depends()):
+    try:
+        course = await service.get_course_by_id(course_id)
+        if not course:
+            raise HTTPException(status_code=404, detail="Course not found")
+        return course
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete('/{course_id}', status_code=204)
 async def delete_course(course_id: int,

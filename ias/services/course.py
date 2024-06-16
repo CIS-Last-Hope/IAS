@@ -247,3 +247,13 @@ class CourseService:
         course = self.session.query(tables.Course).filter(tables.Course.id == course_id).first()
         course.average_rating = average_rating
         self.session.commit()
+
+    async def get_all_courses(self) -> List[models.Course]:
+        courses = self.session.query(tables.Course).all()
+        return [models.Course.from_orm(course) for course in courses]
+
+    async def get_course_by_id(self, course_id: int):
+        return self.session.query(tables.Course).filter(tables.Course.id == course_id).first()
+
+
+

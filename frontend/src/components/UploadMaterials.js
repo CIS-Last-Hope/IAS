@@ -1,41 +1,48 @@
-// src/components/UploadMaterials.js
-
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
 
-const UploadMaterials = ({ courseId }) => { // Передаем courseId как параметр функции
+function UploadMaterials() {
+  const { courseId } = useParams();
   const [file, setFile] = useState(null);
+  const [error, setError] = useState('');
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleUpload = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('Token not found');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
+
     try {
-      const response = await axios.post(`/api/course/${courseId}/materials/upload`, formData, {
+      await axios.post(`http://localhost:8000/course/${courseId}/materials/upload?token=${token}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-      console.log('File uploaded:', response.data);
-      // Очистить форму или выполнить другие действия после успешной загрузки материалов
+      alert('File uploaded successfully!');
+      setFile(null); // Очищаем состояние файла после успешной загрузки
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error(error.response?.data);
+      setError('Failed to upload file');
     }
   };
 
   return (
     <div>
       <h2>Upload Materials</h2>
-      <form onSubmit={handleSubmit}>
-        <input type="file" onChange={handleFileChange} required />
-        <button type="submit">Upload File</button>
-      </form>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <input type="file" onChange={handleFileChange} />
+      <button onClick={handleUpload}>Upload</button>
     </div>
   );
-};
+}
 
 export default UploadMaterials;
