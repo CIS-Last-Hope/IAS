@@ -212,9 +212,29 @@ function CourseDetails() {
             <button onClick={() => setEditMode(!editMode)}>{editMode ? 'Cancel' : 'Edit'}</button>
             <button onClick={handleDeleteCourse}>Delete</button>
             <button onClick={handleUploadClick}>Upload Materials</button>
-            <button onClick={handleDownloadMaterials}>Download Materials</button>
-            {!ratingSubmitted && !rating && <button onClick={() => setRating('rate')}>Rate</button>}
-            {!ratingSubmitted && rating && (
+          </div>
+        )}
+
+        {isCreator && (
+          <div>
+            {editMode && (
+              <div>
+                <div>
+                  <label>New Title:</label>
+                  <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
+                </div>
+                <div>
+                  <label>New Description:</label>
+                  <textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} required />
+                </div>
+                <button onClick={handleUpdateCourse}>Save</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {!editMode && !ratingSubmitted && !rating && <button onClick={() => setRating('rate')}>Rate</button>}
+            {!editMode && !ratingSubmitted && rating && (
               <select value={rating} onChange={(e) => setRating(e.target.value)}>
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -223,11 +243,10 @@ function CourseDetails() {
                 <option value="5">5</option>
               </select>
             )}
-            {!ratingSubmitted && rating && <button onClick={handleRateCourse}>Submit Rating</button>}
+            {!editMode && !ratingSubmitted && rating && <button onClick={handleRateCourse}>Submit Rating</button>}
             {ratingSubmitted && <button onClick={() => setRating(null)}>Rate</button>}
-          </div>
-        )}
 
+        <button onClick={handleDownloadMaterials}>Download Materials</button>
         <button onClick={handleGetRecommendations}>Get Recommendations</button>
         <Link to="/course"><button>Back to Courses</button></Link>
       </div>
@@ -251,20 +270,6 @@ function CourseDetails() {
           <input type="file" onChange={handleFileChange} />
           <button onClick={handleFileUpload}>Upload File</button>
           <button onClick={handleUploadCancel}>Cancel</button>
-        </div>
-      )}
-
-      {editMode && (
-        <div>
-          <div>
-            <label>New Title:</label>
-            <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
-          </div>
-          <div>
-            <label>New Description:</label>
-            <textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} required />
-          </div>
-          <button onClick={handleUpdateCourse}>Save</button>
         </div>
       )}
     </div>
