@@ -18,6 +18,7 @@ class User(Base):
 
     sessions = relationship("Session", back_populates="user")
     courses = relationship("Course", back_populates="creator")
+    ratings = relationship("CourseRating", back_populates="user")
 
 
 class Session(Base):
@@ -37,9 +38,11 @@ class Course(Base):
     title = sa.Column(sa.String, unique=True)
     description = sa.Column(sa.String)
     creator_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"), nullable=False)
+    average_rating = sa.Column(sa.Float, default=0.0)
 
     creator = relationship("User", back_populates="courses")
     materials = relationship("Material", back_populates="course", cascade="all, delete-orphan")
+    ratings = relationship("CourseRating", back_populates="course", cascade="all, delete-orphan")
 
 
 class Material(Base):
@@ -51,5 +54,14 @@ class Material(Base):
 
     course = relationship("Course", back_populates="materials")
 
+class CourseRating(Base):
+    __tablename__ = 'course_ratings'
+    id = sa.Column(sa.Integer, primary_key=True, index=True)
+    rating = sa.Column(sa.Integer, nullable=False)
+    user_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"), nullable=False)
+    course_id = sa.Column(sa.Integer, sa.ForeignKey("courses.id"), nullable=False)
+
+    user = relationship("User", back_populates="ratings")
+    course = relationship("Course", back_populates="ratings")
 
 Base.metadata.create_all(bind=engine)
