@@ -10,9 +10,9 @@ python-multipart
 pyotp~=2.9.0
 pyqrcode~=1.2.1
 pypng
-jose
-torch
+jose~=1.0.0
+torch~=2.4.0
 sentence-transformers
-uuid
-pathlib
-python-pptx
+uuid~=1.30
+pathlib~=1.0.1
+aspose.slides

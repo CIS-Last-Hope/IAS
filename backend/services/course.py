@@ -1,18 +1,19 @@
-import io
 import pathlib
 import shutil
 import uuid
 from pathlib import Path
+import aspose.slides as slides
+import aspose.pydrawing as drawing
 
 from fastapi import Depends, HTTPException, status, UploadFile
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 
 from .. import tables, models
 from ..database import get_session
 
-from typing import List, Union
+from typing import List
 import torch
 from sentence_transformers import SentenceTransformer, util
 
@@ -84,9 +85,14 @@ class CourseService:
         if file_path.exists():
             unique_filename = f"{file_path.stem}_{uuid.uuid4().hex}{file_path.suffix}"
             file_path = course_dir / unique_filename
+            original_filename = unique_filename
 
         with file_path.open("wb") as f:
             f.write(file.file.read())
+
+        mime_type = await get_mime_type(file_path)
+        if mime_type == 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+            file_path = await pptx_to_images(file_path, original_filename, course_id)
 
         lessons = self.session.query(tables.Lesson).filter(
             (tables.Lesson.course_id == course_id)
@@ -166,9 +172,15 @@ class CourseService:
             status_code=status.HTTP_404_NOT_FOUND,
             detail="The file does not exist"
         )
-
         filepath = lesson.filepath
         file_path = Path(filepath)
+        if file_path.is_dir():
+            if file_path.exists():
+                shutil.rmtree(file_path)
+                file_path = str(file_path) + '.pptx'
+                file_path = Path(file_path)
+            else:
+                raise exception
         if file_path.exists():
             file_path.unlink()
         else:
@@ -265,10 +277,23 @@ class CourseService:
             raise exception
 
         mime_type = await get_mime_type(lesson.filepath)
+        if mime_type == 'application/octet-stream':
+            mime_type = 'multipart/x-mixed-replace; boundary=separator'
+            path = Path(lesson.filepath)
+            files = list(path.glob("*"))
 
-        path = Path(lesson.filepath)
-        file = path.open('rb')
+            def file_generator():
+                for file_path in files:
+                    mime_type = 'image/jpeg'
+                    yield f"--separator\nContent-Type: {mime_type}\n\n".encode('utf-8')
+                    with open(file_path, "rb") as file:
+                        yield from file
+                    yield b"\n"
 
+            file = file_generator()
+        else:
+            path = Path(lesson.filepath)
+            file = path.open('rb')
         return StreamingResponse(content=file, media_type=mime_type)
 
     async def recommend_courses(self, course_id: int) -> List[models.Course]:
@@ -364,8 +389,20 @@ async def get_mime_type(file_path: Path) -> str:
         '.gif': 'image/gif',
         '.mp4': 'video/mp4',
         '.mp3': 'audio/mpeg',
-        '.ppt': 'application/vnd.ms-powerpoint',
         '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     }
 
     return extension_to_mime.get(pathlib.Path(file_path).suffix.lower(), 'application/octet-stream')
+
+
+async def pptx_to_images(pptx_path: str, pptx_filename: str, course_id: int):
+    pptx_filename = pptx_filename.replace(".pptx", "")
+    pptx_dir = UPLOAD_DIR / str(course_id) / pptx_filename
+    pptx_dir.mkdir(exist_ok=True, parents=True)
+    with slides.Presentation(str(pptx_path)) as presentation:
+        i = 0
+        for slide in presentation.slides:
+            slide.get_thumbnail(2, 2).save(f"{pptx_dir}/{i}.jpg".format(str(slide.slide_number)),
+                                           drawing.imaging.ImageFormat.jpeg)
+            i += 1
+    return pptx_dir
