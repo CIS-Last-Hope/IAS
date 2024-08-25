@@ -13,3 +13,6 @@ pypng
 jose
 torch
 sentence-transformers
+uuid
+pathlib
+python-pptx

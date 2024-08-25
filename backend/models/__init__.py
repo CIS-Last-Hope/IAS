@@ -9,4 +9,5 @@ from .course import (
     Course,
     CourseUpdate,
     RateCourse,
+    Lesson,
 )

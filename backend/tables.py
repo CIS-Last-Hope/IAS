@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
 
-from ias.database import engine
+from backend.database import engine
 
 Base = declarative_base()
 
@@ -41,18 +41,20 @@ class Course(Base):
     average_rating = sa.Column(sa.Float, default=0.0)
 
     creator = relationship("User", back_populates="courses")
-    materials = relationship("Material", back_populates="course", cascade="all, delete-orphan")
+    lessons = relationship("Lesson", back_populates="course", cascade="all, delete-orphan")
     ratings = relationship("CourseRating", back_populates="course", cascade="all, delete-orphan")
 
 
-class Material(Base):
-    __tablename__ = 'materials'
+class Lesson(Base):
+    __tablename__ = 'lessons'
     id = sa.Column(sa.Integer, primary_key=True, index=True)
     filename = sa.Column(sa.String, nullable=False)
     filepath = sa.Column(sa.String, nullable=False)
+    lesson_id = sa.Column(sa.Integer, nullable=False)
     course_id = sa.Column(sa.Integer, sa.ForeignKey("courses.id"), nullable=False)
 
-    course = relationship("Course", back_populates="materials")
+    course = relationship("Course", back_populates="lessons")
+
 
 class CourseRating(Base):
     __tablename__ = 'course_ratings'
@@ -64,4 +66,6 @@ class CourseRating(Base):
     user = relationship("User", back_populates="ratings")
     course = relationship("Course", back_populates="ratings")
 
-Base.metadata.create_all(bind=engine)
+
+Base.metadata.create_all(engine)
+

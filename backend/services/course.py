@@ -1,14 +1,18 @@
+import io
+import pathlib
 import shutil
+import uuid
 from pathlib import Path
 
 from fastapi import Depends, HTTPException, status, UploadFile
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 
 from .. import tables, models
 from ..database import get_session
 
-from typing import List
+from typing import List, Union
 import torch
 from sentence_transformers import SentenceTransformer, util
 
@@ -53,7 +57,7 @@ class CourseService:
             )
         return course
 
-    async def upload_file(self, course_id: int, file: UploadFile, user_id: int):
+    async def upload_lesson(self, course_id: int, lesson_id: int, file: UploadFile, user_id: int):
         course = self.session.query(tables.Course).filter(
             (tables.Course.id == course_id)
              ).first()
@@ -74,16 +78,32 @@ class CourseService:
         course_dir = UPLOAD_DIR / str(course_id)
         course_dir.mkdir(exist_ok=True, parents=True)
 
-        file_location = course_dir / file.filename
-        with file_location.open("wb") as f:
+        original_filename = file.filename
+        file_path = course_dir / original_filename
+
+        if file_path.exists():
+            unique_filename = f"{file_path.stem}_{uuid.uuid4().hex}{file_path.suffix}"
+            file_path = course_dir / unique_filename
+
+        with file_path.open("wb") as f:
             f.write(file.file.read())
 
-        material = tables.Material(
+        lessons = self.session.query(tables.Lesson).filter(
+            (tables.Lesson.course_id == course_id)
+        ).all()
+
+        for lesson in reversed(lessons):
+            if lesson_id <= lesson.lesson_id:
+                lesson.lesson_id += 1
+                self.session.add(lesson)
+
+        lesson = tables.Lesson(
             filename=file.filename,
-            filepath=str(file_location),
-            course_id=course_id
+            filepath=str(file_path),
+            course_id=course_id,
+            lesson_id=lesson_id
         )
-        self.session.add(material)
+        self.session.add(lesson)
         self.session.commit()
 
         return {"filename": file.filename}
@@ -111,6 +131,62 @@ class CourseService:
         shutil.make_archive(str(course_dir), 'zip', root_dir=str(course_dir))
 
         return str(archive_path)
+
+    async def get_all_lessons(self, course_id: int) -> List[models.Lesson]:
+        lessons = self.session.query(tables.Lesson).filter(
+            tables.Lesson.course_id == course_id,
+        ).all()
+        return [models.Lesson.from_orm(lesson) for lesson in lessons]
+
+    async def delete_lesson(self, course_id: int, lesson_id: int, user_id: int):
+        course = self.session.query(tables.Course).filter(
+            tables.Course.id == course_id
+        ).first()
+
+        exception = HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Course not found"
+        )
+        if not course:
+            raise exception
+
+        exception = HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to delete this course"
+        )
+        if course.creator_id != user_id:
+            raise exception
+
+        lesson = self.session.query(tables.Lesson).filter(
+            tables.Lesson.lesson_id == lesson_id,
+            tables.Lesson.course_id == course_id
+        ).first()
+
+        exception = HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="The file does not exist"
+        )
+
+        filepath = lesson.filepath
+        file_path = Path(filepath)
+        if file_path.exists():
+            file_path.unlink()
+        else:
+            raise exception
+
+        self.session.delete(lesson)
+        self.session.commit()
+
+        lessons = self.session.query(tables.Lesson).filter(
+            (tables.Lesson.course_id == course_id)
+        ).all()
+
+        for lesson in lessons:
+            if lesson_id <= lesson.lesson_id:
+                lesson.lesson_id -= 1
+                self.session.add(lesson)
+
+        self.session.commit()
 
     async def delete_course(self, course_id: int, user_id: int):
         course = self.session.query(tables.Course).filter(
@@ -174,6 +250,27 @@ class CourseService:
 
         return course
 
+    async def view_lesson(self, course_id: int, lesson_id: int):
+        lesson = self.session.query(tables.Lesson).filter(
+            tables.Lesson.lesson_id == lesson_id,
+            tables.Lesson.course_id == course_id,
+        ).first()
+
+        exception = HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Lesson not found"
+        )
+
+        if not lesson:
+            raise exception
+
+        mime_type = await get_mime_type(lesson.filepath)
+
+        path = Path(lesson.filepath)
+        file = path.open('rb')
+
+        return StreamingResponse(content=file, media_type=mime_type)
+
     async def recommend_courses(self, course_id: int) -> List[models.Course]:
         # Получаем текущий курс
         course = self.session.query(tables.Course).filter(
@@ -207,7 +304,8 @@ class CourseService:
         similarity_scores = util.pytorch_cos_sim(embeddings[0], embeddings[1:])
 
         # Получаем индексы курсов, с которыми текущий курс имеет наибольшее сходство
-        similar_indices = similarity_scores.argsort(descending=True)[0][:3].cpu().numpy()  # берем 3 наиболее похожих курсов
+        similar_indices = similarity_scores.argsort(descending=True)[0][:3].cpu().numpy()
+        # берем 3 наиболее похожих курсов
 
         # Формируем список рекомендуемых курсов
         recommended_courses = [all_courses[idx] for idx in similar_indices]
@@ -256,4 +354,18 @@ class CourseService:
         return self.session.query(tables.Course).filter(tables.Course.id == course_id).first()
 
 
+async def get_mime_type(file_path: Path) -> str:
+    extension_to_mime = {
+        '.txt': 'text/plain',
+        '.pdf': 'application/pdf',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.mp4': 'video/mp4',
+        '.mp3': 'audio/mpeg',
+        '.ppt': 'application/vnd.ms-powerpoint',
+        '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    }
 
+    return extension_to_mime.get(pathlib.Path(file_path).suffix.lower(), 'application/octet-stream')
