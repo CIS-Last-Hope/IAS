@@ -8,7 +8,6 @@ from pyotp import TOTP
 from io import BytesIO
 
 from fastapi import HTTPException, status, Depends
-from fastapi.security import OAuth2PasswordBearer
 from passlib.hash import bcrypt
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session

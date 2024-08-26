@@ -4,7 +4,6 @@ from .api import router
 
 app = FastAPI()
 
-# Добавление CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
