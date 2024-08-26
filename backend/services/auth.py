@@ -8,7 +8,6 @@ from pyotp import TOTP
 from io import BytesIO
 
 from fastapi import HTTPException, status, Depends
-from fastapi.security import OAuth2PasswordBearer
 from passlib.hash import bcrypt
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
@@ -68,7 +67,7 @@ class AuthService:
         payload = {
             'iat': now,
             'nbf': now,
-            'exp': now + timedelta(seconds=settings.jwt_exepiration),
+            'exp': now + timedelta(seconds=settings.jwt_expiration),
             'sub': str(user_data.id),
             'user': user_data.dict()
         }

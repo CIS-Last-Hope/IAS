@@ -8,8 +8,9 @@ class Settings(BaseSettings):
 
     jwt_secret: str
     jwt_algorithm: str = 'HS256'
-    jwt_exepiration: int = 3600
+    jwt_expiration: int = 3600
 
+    api_key_antivirus: str
 
 
 settings = Settings(

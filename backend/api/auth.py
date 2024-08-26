@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import StreamingResponse, JSONResponse
 
@@ -13,9 +13,11 @@ router = APIRouter(
     prefix='/auth',
 )
 
+
 @router.get('/current-user', response_model=User)
 async def read_current_user(current_user: User = Depends(get_current_user)):
     return current_user
+
 
 @router.post('/sign-up', response_model=dict)
 async def sign_up(user_data: UserCreate, service: AuthService = Depends()):
