@@ -67,5 +67,13 @@ class CourseRating(Base):
     course = relationship("Course", back_populates="ratings")
 
 
+class Admin(Base):
+    __tablename__ = 'admins'
+    id = sa.Column(sa.Integer, primary_key=True, index=True)
+    email = sa.Column(sa.String, unique=True)
+    username = sa.Column(sa.String, unique=True)
+    password_hash = sa.Column(sa.String)
+
+
 Base.metadata.create_all(engine)
 

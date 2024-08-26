@@ -11,3 +11,9 @@ from .course import (
     RateCourse,
     Lesson,
 )
+
+from .admin import (
+    AdminToken,
+    Admin,
+    AdminCreate,
+)

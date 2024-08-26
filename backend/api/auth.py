@@ -7,6 +7,7 @@ from ..models.auth import (
     Token,
     User
 )
+
 from ..services.auth import AuthService, get_current_user
 
 router = APIRouter(
