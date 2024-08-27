@@ -1,5 +1,6 @@
 import sqlalchemy as sa
-from sqlalchemy.orm import relationship
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import relationship, sessionmaker
 from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -37,7 +38,7 @@ class Course(Base):
     id = sa.Column(sa.Integer, primary_key=True, index=True)
     title = sa.Column(sa.String, unique=True)
     description = sa.Column(sa.String)
-    creator_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"), nullable=False)
+    creator_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"), nullable=True)
     average_rating = sa.Column(sa.Float, default=0.0)
 
     creator = relationship("User", back_populates="courses")
@@ -67,5 +68,26 @@ class CourseRating(Base):
     course = relationship("Course", back_populates="ratings")
 
 
+class Admin(Base):
+    __tablename__ = 'admins'
+    id = sa.Column(sa.Integer, primary_key=True, index=True)
+    email = sa.Column(sa.String, unique=True)
+    username = sa.Column(sa.String, unique=True)
+    password_hash = sa.Column(sa.String)
+
+
 Base.metadata.create_all(engine)
+admin = User(
+    email='admin',
+    username='admin',
+    password_hash='admin'
+)
+Session = sessionmaker(bind=engine)
+session = Session()
+try:
+    session.add(admin)
+    session.commit()
+except SQLAlchemyError:
+    print('admin created')
+session.close()
 

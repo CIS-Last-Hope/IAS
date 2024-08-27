@@ -31,4 +31,4 @@ archive.zip
 
 database.sqlite3
 uploads
-.env
+backend/.env

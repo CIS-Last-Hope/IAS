@@ -5,8 +5,12 @@ sqlalchemy~=2.0.32
 passlib[bcrypt]~=1.7.4
 pyotp~=2.9.0
 pyqrcode~=1.2.1
-jose~=1.0.0
-torch~=2.4.0
+python-jose[cryptography]
+pydantic_settings
+python-multipart
 uuid~=1.30
 pathlib~=1.0.1
 vt-py
+flower
+gunicorn
+aspose.slides
