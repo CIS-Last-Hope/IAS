@@ -18,8 +18,7 @@ from sqlalchemy.sql import func
 from .. import tables, models
 from ..database import get_session
 
-from typing import List, BinaryIO
-import torch
+from typing import List
 #from sentence_transformers import SentenceTransformer, util
 
 executor = ThreadPoolExecutor(max_workers=4)
