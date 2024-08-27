@@ -12,5 +12,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Включение роутера
 app.include_router(router)

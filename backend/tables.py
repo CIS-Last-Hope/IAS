@@ -1,4 +1,5 @@
 import sqlalchemy as sa
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import relationship, sessionmaker
 from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
@@ -83,7 +84,10 @@ admin = User(
 )
 Session = sessionmaker(bind=engine)
 session = Session()
-session.add(admin)
-session.commit()
+try:
+    session.add(admin)
+    session.commit()
+except SQLAlchemyError:
+    print('admin created')
 session.close()
 

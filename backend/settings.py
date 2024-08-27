@@ -16,6 +16,6 @@ class Settings(BaseSettings):
 
 
 settings = Settings(
-    _env_file='.env',
+    _env_file='backend/.env',
     _env_file_encoding='utf-8',
 )
