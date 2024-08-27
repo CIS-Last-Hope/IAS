@@ -12,6 +12,8 @@ class Settings(BaseSettings):
 
     api_key_antivirus: str
 
+    admin_code: str
+
 
 settings = Settings(
     _env_file='.env',

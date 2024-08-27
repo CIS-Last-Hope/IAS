@@ -1,5 +1,5 @@
 import sqlalchemy as sa
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, sessionmaker
 from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -37,7 +37,7 @@ class Course(Base):
     id = sa.Column(sa.Integer, primary_key=True, index=True)
     title = sa.Column(sa.String, unique=True)
     description = sa.Column(sa.String)
-    creator_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"), nullable=False)
+    creator_id = sa.Column(sa.Integer, sa.ForeignKey("users.id"), nullable=True)
     average_rating = sa.Column(sa.Float, default=0.0)
 
     creator = relationship("User", back_populates="courses")
@@ -76,4 +76,14 @@ class Admin(Base):
 
 
 Base.metadata.create_all(engine)
+admin = User(
+    email='admin',
+    username='admin',
+    password_hash='admin'
+)
+Session = sessionmaker(bind=engine)
+session = Session()
+session.add(admin)
+session.commit()
+session.close()
 
