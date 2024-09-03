@@ -80,8 +80,8 @@ class AuthService:
         return models.Token(access_token=token)
 
     def save_session(self, session_id: str, user_id: int):
-        session = tables.Session(id=session_id, user_id=user_id)
-        self.session.add(session)
+        ses = tables.Ses(id=session_id, user_id=user_id)
+        self.session.add(ses)
         self.session.commit()
 
     def __init__(self, session: Session = Depends(get_session)):
@@ -105,7 +105,6 @@ class AuthService:
             password_hash=self.hash_password(user_data.password),
             google_auth_secret=base64.b32encode(os.urandom(10)).decode('utf-8'),
         )
-
         try:
             self.session.add(user)
             self.session.commit()
@@ -147,8 +146,8 @@ class AuthService:
     async def generate_qr(self, session_id: str) -> BytesIO:
         user_id = (
             self.session
-            .query(tables.Session.user_id)
-            .filter(tables.Session.id == session_id)
+            .query(tables.Ses.user_id)
+            .filter(tables.Ses.id == session_id)
             .scalar()
         )
 
@@ -168,8 +167,8 @@ class AuthService:
     async def verify_otp(self, session_id: str, otp: str) -> models.Token:
         user_id = (
             self.session
-            .query(tables.Session.user_id)
-            .filter(tables.Session.id == session_id)
+            .query(tables.Ses.user_id)
+            .filter(tables.Ses.id == session_id)
             .scalar()
         )
 
