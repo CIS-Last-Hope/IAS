@@ -17,12 +17,12 @@ class User(Base):
     password_hash = sa.Column(sa.String)
     google_auth_secret = sa.Column(sa.String)
 
-    sessions = relationship("Session", back_populates="user")
+    sessions = relationship("Ses", back_populates="user")
     courses = relationship("Course", back_populates="creator")
     ratings = relationship("CourseRating", back_populates="user")
 
 
-class Session(Base):
+class Ses(Base):
     __tablename__ = "sessions"
 
     id = sa.Column(sa.String, primary_key=True, index=True)
@@ -82,10 +82,15 @@ admin = User(
     username='admin',
     password_hash='admin'
 )
+ses = Ses(
+    id='admin',
+    user_id=1,
+)
 Session = sessionmaker(bind=engine)
 session = Session()
 try:
     session.add(admin)
+    session.add(ses)
     session.commit()
 except SQLAlchemyError:
     print('admin created')
