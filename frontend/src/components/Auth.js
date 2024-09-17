@@ -8,16 +8,16 @@ import SignIn from './SignIn';
 function Auth() {
   return (
     <div>
-      <nav>
-        <ul>
-          <li>
-            <Link to="/sign-up">Sign Up</Link>
-          </li>
-          <li>
-            <Link to="/sign-in">Sign In</Link>
-          </li>
-        </ul>
-      </nav>
+      {/*<nav>*/}
+      {/*  <ul>*/}
+      {/*    <li>*/}
+      {/*      <Link to="/sign-up">Sign Up</Link>*/}
+      {/*    </li>*/}
+      {/*    <li>*/}
+      {/*      <Link to="/sign-in">Sign In</Link>*/}
+      {/*    </li>*/}
+      {/*  </ul>*/}
+      {/*</nav>*/}
 
       <Routes>
         <Route path="/sign-up" element={<SignUp />} />

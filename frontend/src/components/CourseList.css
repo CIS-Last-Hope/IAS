@@ -1,0 +1,172 @@
+.course-list-container {
+  max-width: 1200px; /* Ширина контейнера */
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #fff;
+}
+
+.course-header {
+  margin-bottom: 20px;
+}
+
+h2 {
+  color: #333;
+  font-size: 24px;
+  margin: 0;
+}
+
+.course-error {
+  color: red;
+  margin-bottom: 20px;
+}
+
+.course-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px; /* Отступ между карточками */
+}
+
+.course-card {
+  flex: 1 1 300px; /* Карточки занимают минимум 300px и могут расширяться */
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.course-title {
+  font-size: 18px;
+  margin: 0 0 10px;
+}
+
+.course-description {
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.course-link {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.course-link:hover {
+  text-decoration: underline;
+}
+
+.course-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.course-logout-button,
+.course-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: white;
+  text-align: center;
+  font-size: 14px;
+}
+
+.course-logout-button {
+  background-color: #007bff;
+}
+
+.course-logout-button:hover {
+  background-color: #0056b3;
+}
+
+.course-button {
+  background-color: #28a745;
+}
+
+.course-button:hover {
+  background-color: #218838;
+}
+.course-details-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+}
+
+.course-details-error {
+  color: #dc3545;
+  margin-bottom: 10px;
+}
+
+.creator-buttons-group,
+.other-buttons-group {
+  display: flex;
+  flex-wrap: wrap; /* Позволяет кнопкам переноситься на новую строку */
+  gap: 20px; /* Увеличение отступа между кнопками */
+  margin-top: 20px;
+}
+
+.creator-buttons-group button,
+.other-buttons-group button {
+  padding: 8px 16px; /* Уменьшение высоты кнопок */
+  font-size: 14px; /* Уменьшение размера шрифта */
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: center; /* Центрируем текст внутри кнопок */
+  background-color: #007bff; /* Цвет фона кнопок по умолчанию */
+  color: white; /* Цвет текста кнопок */
+}
+
+.creator-buttons-group button:hover,
+.other-buttons-group button:hover {
+  opacity: 0.8;
+  background-color: #0056b3; /* Цвет фона при наведении */
+}
+
+/* Специфичные стили для кнопок создателя */
+.creator-buttons-group button {
+  background-color: #28a745; /* Цвет фона кнопок создателя */
+  color: white; /* Цвет текста кнопок создателя */
+}
+
+.creator-buttons-group button:hover {
+  background-color: #218838; /* Цвет фона кнопок создателя при наведении */
+}
+
+.upload-form {
+  margin-top: 20px;
+  display: flex;
+  align-items: center; /* Выравнивание по вертикали */
+  gap: 20px; /* Увеличение отступа между элементами формы */
+}
+
+.upload-form input[type="file"] {
+  margin-right: 0; /* Удаляем отступ справа */
+}
+
+@media (max-width: 600px) {
+  .creator-buttons-group,
+  .other-buttons-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .creator-buttons-group button,
+  .other-buttons-group button {
+    margin-bottom: 12px; /* Увеличение отступа между кнопками в колонке */
+  }
+
+  .upload-form {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px; /* Увеличение отступа между элементами формы на мобильных устройствах */
+  }
+
+  .upload-form input[type="file"] {
+    margin-bottom: 10px;
+  }
+}

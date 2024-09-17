@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './CreateCourse.css'; // Importing styles
 
 function CreateCourse() {
   const [title, setTitle] = useState('');
@@ -27,29 +28,38 @@ function CreateCourse() {
     }
   };
 
+  const handleCancel = () => {
+    navigate('/course');
+  };
+
   return (
-    <div>
+    <div className="create-course-container">
       <h2>Create Course</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div>
+      {error && <p className="create-course-error">{error}</p>}
+      <form onSubmit={handleSubmit} className="create-course-form">
+        <div className="form-group">
           <label>Title:</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
+            className="form-control"
           />
         </div>
-        <div>
+        <div className="form-group">
           <label>Description:</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
+            className="form-control"
           />
         </div>
-        <button type="submit">Create</button>
+        <div className="button-group">
+          <button type="submit" className="create-course-button">Create</button>
+          <button type="button" onClick={handleCancel} className="cancel-button">Cancel</button>
+        </div>
       </form>
     </div>
   );

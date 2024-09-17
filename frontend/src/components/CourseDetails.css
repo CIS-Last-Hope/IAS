@@ -1,0 +1,83 @@
+.course-details-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+}
+
+.course-details-error {
+  color: #dc3545;
+  margin-bottom: 10px;
+}
+
+.creator-buttons-group,
+.other-buttons-group {
+  display: flex;
+  flex-wrap: wrap; /* Позволяет кнопкам переноситься на новую строку */
+  gap: 20px; /* Увеличение отступа между кнопками */
+  margin-top: 20px;
+}
+
+.creator-buttons-group button,
+.other-buttons-group button {
+  padding: 8px 16px; /* Уменьшение высоты кнопок */
+  font-size: 14px; /* Уменьшение размера шрифта */
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: center; /* Центрируем текст внутри кнопок */
+  background-color: #007bff; /* Цвет фона кнопок по умолчанию */
+  color: white; /* Цвет текста кнопок */
+}
+
+.creator-buttons-group button:hover,
+.other-buttons-group button:hover {
+  opacity: 0.8;
+  background-color: #0056b3; /* Цвет фона при наведении */
+}
+
+/* Специфичные стили для кнопок создателя */
+.creator-buttons-group button {
+  background-color: #28a745; /* Цвет фона кнопок создателя */
+  color: white; /* Цвет текста кнопок создателя */
+}
+
+.creator-buttons-group button:hover {
+  background-color: #218838; /* Цвет фона кнопок создателя при наведении */
+}
+
+.upload-form {
+  margin-top: 20px;
+  display: flex;
+  align-items: center; /* Выравнивание по вертикали */
+  gap: 20px; /* Увеличение отступа между элементами формы */
+}
+
+.upload-form input[type="file"] {
+  margin-right: 0; /* Удаляем отступ справа */
+}
+
+@media (max-width: 600px) {
+  .creator-buttons-group,
+  .other-buttons-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .creator-buttons-group button,
+  .other-buttons-group button {
+    margin-bottom: 12px; /* Увеличение отступа между кнопками в колонке */
+  }
+
+  .upload-form {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px; /* Увеличение отступа между элементами формы на мобильных устройствах */
+  }
+
+  .upload-form input[type="file"] {
+    margin-bottom: 10px;
+  }
+}

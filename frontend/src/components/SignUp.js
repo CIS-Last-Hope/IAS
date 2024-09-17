@@ -2,12 +2,14 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
+import './SignUp.css'; // Подключаем файл стилей
 
 function SignUp() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [qrCode, setQrCode] = useState(null);
+  const [error, setError] = useState('');
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -21,9 +23,10 @@ function SignUp() {
       const response = await axios.post('http://localhost:8000/auth/sign-up', userData);
       const session_id = response.data.session_id;
       fetchQrCode(session_id);
+      setError('');
     } catch (error) {
       console.error(error.response?.data);
-      alert('Registration failed!');
+      setError('Registration failed!');
     }
   };
 
@@ -34,35 +37,39 @@ function SignUp() {
       setQrCode(qrCodeUrl);
     } catch (error) {
       console.error(error.response?.data);
-      alert('Failed to fetch QR code!');
+      setError('Failed to fetch QR code!');
     }
   };
 
   return (
-    <div>
+    <div className="signup-container">
       <h2>Sign Up</h2>
       {!qrCode ? (
-        <form onSubmit={handleSignUp}>
-          <div>
+        <form onSubmit={handleSignUp} className="signup-form">
+          <div className="form-group">
             <label>Email:</label>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
-          <div>
+          <div className="form-group">
             <label>Username:</label>
             <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
           </div>
-          <div>
+          <div className="form-group">
             <label>Password:</label>
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
-          <button type="submit">Sign Up</button>
+          {error && <p className="error-message">{error}</p>}
+          <button type="submit" className="signup-button">Sign Up</button>
         </form>
       ) : (
         <div>
           <h3>Scan this QR code to complete registration</h3>
-          {qrCode ? <img src={qrCode} alt="QR Code" /> : <p>Loading QR code...</p>}
+          {qrCode ? <img src={qrCode} alt="QR Code" className="qr-code" /> : <p>Loading QR code...</p>}
         </div>
       )}
+      <p className="signin-link">
+        Already have an account? <a href="/sign-in">Sign In</a>
+      </p>
     </div>
   );
 }
