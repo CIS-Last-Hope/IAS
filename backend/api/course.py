@@ -30,7 +30,7 @@ async def create_course(course_data: BaseCourse,
     return await service.create_new_course(course_data, current_user.id)
 
 
-@router.post('/{course_id}/{lesson_id}/upload', response_model=dict)
+@router.post('/{course_id}/lesson/upload', response_model=dict)
 async def upload_lesson(course_id: int,
                         lesson_id: int,
                         file: UploadFile = File(...),

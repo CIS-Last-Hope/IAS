@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import './CourseList.css'; // Используем те же стили, что и в CourseList
 
 function CourseDetails() {
@@ -11,11 +11,14 @@ function CourseDetails() {
   const [editMode, setEditMode] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [uploadFile, setUploadFile] = useState(null);
+  const [lessonId, setLessonId] = useState(null);
   const [rating, setRating] = useState(null);
   const [error, setError] = useState('');
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  const [showRecommendations, setShowRecommendations] = useState(true); // Новое состояние
+  const navigate = useNavigate(); // Используем useNavigate для навигации
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
@@ -54,6 +57,31 @@ function CourseDetails() {
     fetchCurrentUser();
   }, [courseId]);
 
+  const handleRecommendationClick = (recCourseId) => {
+    setShowRecommendations(false); // Скрываем рекомендации
+    navigate(`/course/${recCourseId}`); // Переходим на страницу выбранного курса
+  };
+
+  // Функция для получения следующего lessonId
+  const fetchNextLessonId = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Token not found');
+        return;
+      }
+
+      const response = await axios.get(`http://localhost:8000/course/${courseId}/lessons?token=${token}`);
+      const lessons = response.data;
+
+      // Определение следующего lessonId
+      const nextLessonId = lessons.length > 0 ? Math.max(...lessons.map(lesson => lesson.lesson_id)) + 1 : 1;
+      setLessonId(nextLessonId);
+    } catch (error) {
+      setError('Failed to fetch lessons');
+    }
+  };
+
   const handleUpdateCourse = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -90,8 +118,9 @@ function CourseDetails() {
     }
   };
 
-  const handleUploadClick = () => {
+  const handleUploadClick = async () => {
     setShowUploadForm(true);
+    await fetchNextLessonId(); // Получаем следующий lessonId при открытии формы
   };
 
   const handleUploadCancel = () => {
@@ -104,10 +133,15 @@ function CourseDetails() {
   };
 
   const handleFileUpload = async () => {
+    if (!uploadFile || lessonId === null) {
+      setError('No file selected or lessonId not set');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
-      if (!token || !uploadFile) {
-        setError('Token not found or no file selected');
+      if (!token) {
+        setError('Token not found');
         return;
       }
 
@@ -115,17 +149,18 @@ function CourseDetails() {
       formData.append('file', uploadFile);
 
       await axios.post(
-        `http://localhost:8000/course/${courseId}/materials/upload?token=${token}`,
+        `http://localhost:8000/course/${courseId}/lesson/upload?lesson_id=${lessonId}&token=${token}`,
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`
           }
         }
       );
 
       setShowUploadForm(false);
-      setUploadFile(null);
+      setUploadFile(null); // Очищаем файл после загрузки
     } catch (error) {
       console.error('Failed to upload file:', error);
       setError('Failed to upload file');
@@ -209,45 +244,29 @@ function CourseDetails() {
 
       <div className="creator-buttons">
         {isCreator && !editMode && (
-            <div className="creator-buttons-group">
-              <button onClick={() => setEditMode(!editMode)} className="course-button">Edit</button>
-              <button onClick={handleDeleteCourse} className="course-button">Delete</button>
-              <button onClick={handleUploadClick} className="course-button">Upload Materials</button>
-            </div>
+          <div className="creator-buttons-group">
+            <button onClick={() => setEditMode(!editMode)} className="course-button">Edit</button>
+            <button onClick={handleDeleteCourse} className="course-button">Delete</button>
+            <button onClick={handleUploadClick} className="course-button">Upload Materials</button>
+          </div>
         )}
 
         {isCreator && editMode && (
+          <div>
             <div>
-              <div>
-                <label>New Title:</label>
-                <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required/>
-              </div>
-              <div>
-                <label>New Description:</label>
-                <textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} required/>
-              </div>
-              <button onClick={handleUpdateCourse} className="course-button">Save</button>
+              <label>New Title:</label>
+              <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required/>
             </div>
+            <div>
+              <label>New Description:</label>
+              <textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} required/>
+            </div>
+            <button onClick={handleUpdateCourse} className="course-button">Save</button>
+          </div>
         )}
       </div>
 
-      {/* Остальные кнопки */}
       <div className="other-buttons-group">
-        {!editMode && !ratingSubmitted && !rating &&
-            <button onClick={() => setRating('rate')} className="course-button">Rate</button>}
-        {!editMode && !ratingSubmitted && rating && (
-            <select value={rating} onChange={(e) => setRating(e.target.value)} className="course-select">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-            </select>
-        )}
-        {!editMode && !ratingSubmitted && rating &&
-            <button onClick={handleRateCourse} className="course-button">Submit Rating</button>}
-        {ratingSubmitted && <button onClick={() => setRating(null)} className="course-button">Rate</button>}
-
         <button onClick={handleDownloadMaterials} className="course-button">Download Materials</button>
         <button onClick={handleGetRecommendations} className="course-button">Get Recommendations</button>
         <Link to="/course">
@@ -255,26 +274,47 @@ function CourseDetails() {
         </Link>
       </div>
 
-      {recommendations.length > 0 && (
-          <div>
-            <h3>Recommended Courses</h3>
-            <ul>
-              {recommendations.map((course) => (
-                  <li key={course.id}>
-                    <p><strong>Title:</strong> {course.title}</p>
-                    <p><strong>Description:</strong> {course.description}</p>
-                  </li>
-              ))}
-            </ul>
-          </div>
+      {showRecommendations && recommendations.length > 0 && (
+        <div>
+          <h3>Recommended Courses:</h3>
+          <ul>
+            {recommendations.map((recCourse) => (
+              <li key={recCourse.id}>
+                <button onClick={() => handleRecommendationClick(recCourse.id)} className="recommendation-link">
+                  {recCourse.title}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
-      {showUploadForm && (
-          <div className="upload-form">
-            <input type="file" onChange={handleFileChange}/>
-            <button onClick={handleFileUpload} className="course-button">Upload File</button>
-            <button onClick={handleUploadCancel} className="course-button">Cancel</button>
+      <div className="rating-section">
+        <h3>Rate this course:</h3>
+        {!ratingSubmitted ? (
+          <div>
+            <label>Select Rating:</label>
+            <select value={rating} onChange={(e) => setRating(parseInt(e.target.value))}>
+              <option value="">--Select Rating--</option>
+              <option value={1}>1</option>
+              <option value={2}>2</option>
+              <option value={3}>3</option>
+              <option value={4}>4</option>
+              <option value={5}>5</option>
+            </select>
+            <button onClick={handleRateCourse} className="course-button">Submit Rating</button>
           </div>
+        ) : (
+          <p>Thank you for rating this course!</p>
+        )}
+      </div>
+
+      {showUploadForm && (
+        <div className="upload-form">
+          <input type="file" onChange={handleFileChange} />
+          <button onClick={handleFileUpload} className="course-button">Upload File</button>
+          <button onClick={handleUploadCancel} className="course-button">Cancel</button>
+        </div>
       )}
     </div>
   );

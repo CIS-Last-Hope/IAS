@@ -85,10 +85,10 @@ class CourseService:
         course_dir = UPLOAD_DIR / str(course_id)
         course_dir.mkdir(exist_ok=True, parents=True)
 
-        exception = HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="The uploaded file contains a virus and cannot be processed."
-        )
+        # exception = HTTPException(
+        #     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        #     detail="The uploaded file contains a virus and cannot be processed."
+        # )
 
         # loop = asyncio.get_event_loop()
         # virus = await loop.run_in_executor(executor, antivirus, BytesIO(file.file.read()))
