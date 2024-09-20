@@ -89,8 +89,11 @@ h2 {
 }
 .course-details-container {
   max-width: 800px;
-  margin: 20px auto;
+  max-height: 80vh; /* Максимальная высота - 80% от высоты экрана */
+  overflow-y: auto; /* Вертикальная прокрутка */
   padding: 20px;
+  box-sizing: border-box;
+  margin: 20px auto;
   background-color: #f8f9fa;
   border: 1px solid #ced4da;
   border-radius: 5px;

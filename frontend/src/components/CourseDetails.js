@@ -17,9 +17,14 @@ function CourseDetails() {
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-  const [showRecommendations, setShowRecommendations] = useState(true); // Новое состояние
-  const navigate = useNavigate(); // Используем useNavigate для навигации
+  const [showRecommendations, setShowRecommendations] = useState(false); // Состояние для управления показом рекомендаций
+  const [lessons, setLessons] = useState([]); // Список уроков
+  const [selectedLesson, setSelectedLesson] = useState(null); // Содержимое выбранного урока
+  const [lessonType, setLessonType] = useState(null); // Тип урока (image, text)
+  const [lessonContent, setLessonContent] = useState(null); // Контент урока
+  const navigate = useNavigate();
 
+  // Fetch course details and current user on courseId change
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
@@ -57,9 +62,22 @@ function CourseDetails() {
     fetchCurrentUser();
   }, [courseId]);
 
-  const handleRecommendationClick = (recCourseId) => {
-    setShowRecommendations(false); // Скрываем рекомендации
-    navigate(`/course/${recCourseId}`); // Переходим на страницу выбранного курса
+  // Сбрасываем состояние рекомендаций при смене курса
+  useEffect(() => {
+    setShowRecommendations(false);
+    fetchLessons(); // Загружаем уроки при загрузке страницы курса
+  }, [courseId]);
+
+  // Получение уроков для текущего курса
+  const fetchLessons = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`http://localhost:8000/course/${courseId}/lessons?token=${token}`);
+      setLessons(response.data);
+    } catch (error) {
+      console.error('Failed to fetch lessons:', error);
+      setError('Failed to fetch lessons');
+    }
   };
 
   // Функция для получения следующего lessonId
@@ -82,40 +100,41 @@ function CourseDetails() {
     }
   };
 
-  const handleUpdateCourse = async () => {
+  // Просмотр конкретного урока
+  const viewLesson = async (lessonId) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        setError('Token not found');
-        return;
+      const response = await axios.get(`http://localhost:8000/course/lesson/${courseId}/${lessonId}?token=${token}`, {
+        responseType: 'blob', // Получаем бинарные данные
+      });
+
+      const mimeType = response.headers['content-type'];
+      console.log(mimeType);
+
+      if (mimeType.startsWith('image/')) {
+        setLessonType('image');
+        setLessonContent(URL.createObjectURL(response.data)); // Создаем URL для изображения
+      } else if (mimeType.startsWith('text/plain')) {
+        setLessonType('text');
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setLessonContent(e.target.result); // Текстовый контент
+        };
+        reader.readAsText(response.data);
+      } else {
+        setError('Unsupported lesson content type');
       }
 
-      await axios.put(
-        `http://localhost:8000/course/${courseId}?token=${token}`,
-        { title: newTitle, description: newDescription }
-      );
-      setCourse({ ...course, title: newTitle, description: newDescription });
-      setEditMode(false);
+      setSelectedLesson(lessonId);
     } catch (error) {
-      console.error('Failed to update course:', error);
-      setError('Failed to update course');
+      console.error('Failed to view lesson:', error);
+      setError('Failed to view lesson');
     }
   };
 
-  const handleDeleteCourse = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('Token not found');
-        return;
-      }
-
-      await axios.delete(`http://localhost:8000/course/${courseId}?token=${token}`);
-      window.location.href = '/course';
-    } catch (error) {
-      console.error('Failed to delete course:', error);
-      setError('Failed to delete course');
-    }
+  const handleRecommendationClick = (recCourseId) => {
+    setShowRecommendations(false); // Скрываем список рекомендаций при переходе на другой курс
+    navigate(`/course/${recCourseId}`); // Переходим на страницу выбранного курса
   };
 
   const handleUploadClick = async () => {
@@ -167,7 +186,8 @@ function CourseDetails() {
     }
   };
 
-  const handleDownloadMaterials = async () => {
+  // Удаление курса
+  const handleDeleteCourse = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -175,21 +195,32 @@ function CourseDetails() {
         return;
       }
 
-      const response = await axios.get(`http://localhost:8000/course/${courseId}/materials/download?token=${token}`, {
-        responseType: 'blob'
-      });
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `course_${courseId}_materials.zip`);
-      document.body.appendChild(link);
-      link.click();
-
-      window.URL.revokeObjectURL(url);
+      await axios.delete(`http://localhost:8000/course/${courseId}?token=${token}`);
+      navigate('/course');
     } catch (error) {
-      console.error('Failed to download materials:', error);
-      setError('Failed to download materials');
+      console.error('Failed to delete course:', error);
+      setError('Failed to delete course');
+    }
+  };
+
+  // Обновление курса
+  const handleUpdateCourse = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Token not found');
+        return;
+      }
+
+      await axios.put(
+        `http://localhost:8000/course/${courseId}?token=${token}`,
+        { title: newTitle, description: newDescription }
+      );
+      setCourse({ ...course, title: newTitle, description: newDescription });
+      setEditMode(false);
+    } catch (error) {
+      console.error('Failed to update course:', error);
+      setError('Failed to update course');
     }
   };
 
@@ -223,6 +254,7 @@ function CourseDetails() {
 
       const response = await axios.get(`http://localhost:8000/course/${courseId}/recommendations?token=${token}`);
       setRecommendations(response.data);
+      setShowRecommendations(true); // Показываем рекомендации после успешного получения
     } catch (error) {
       console.error('Failed to fetch recommendations:', error);
       setError('Failed to fetch recommendations');
@@ -267,7 +299,6 @@ function CourseDetails() {
       </div>
 
       <div className="other-buttons-group">
-        <button onClick={handleDownloadMaterials} className="course-button">Download Materials</button>
         <button onClick={handleGetRecommendations} className="course-button">Get Recommendations</button>
         <Link to="/course">
           <button className="course-button">Back to Courses</button>
@@ -286,6 +317,27 @@ function CourseDetails() {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      <div className="lessons-section">
+        <h3>Lessons:</h3>
+        <ul>
+          {lessons.map((lesson) => (
+            <li key={lesson.lesson_id}>
+              <button onClick={() => viewLesson(lesson.lesson_id)} className="lesson-link">
+                View Lesson {lesson.lesson_id}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {selectedLesson && (
+        <div>
+          <h3>Lesson Details:</h3>
+          {lessonType === 'image' && <img src={lessonContent} alt="Lesson content" style={{ maxWidth: '100%', height: '200px' }} />}
+          {lessonType === 'text' && <textarea value={lessonContent} readOnly style={{ width: '100%', height: '200px' }} />}
         </div>
       )}
 
