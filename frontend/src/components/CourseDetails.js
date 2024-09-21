@@ -24,6 +24,12 @@ function CourseDetails() {
   const [lessonContent, setLessonContent] = useState(null); // Контент урока
   const navigate = useNavigate();
 
+  // Сброс состояния рейтинга при изменении курса
+  useEffect(() => {
+    setRating(null); // Сбрасываем рейтинг при изменении курса
+    setRatingSubmitted(false); // Сбрасываем состояние отправленного рейтинга
+  }, [courseId]);
+
   // Fetch course details and current user on courseId change
   useEffect(() => {
     const fetchCourseDetails = async () => {
@@ -130,6 +136,11 @@ function CourseDetails() {
       console.error('Failed to view lesson:', error);
       setError('Failed to view lesson');
     }
+  };
+  const closeLesson = () => {
+    setSelectedLesson(null); // Сбрасываем выбранный урок
+    setLessonType(null);
+    setLessonContent(''); // Очищаем контент
   };
 
   const handleRecommendationClick = (recCourseId) => {
@@ -268,107 +279,112 @@ function CourseDetails() {
   const isCreator = currentUser.id === course.creator_id;
 
   return (
-    <div className="course-details-container">
-      <h2>Course Details</h2>
-      {error && <p className="course-details-error">{error}</p>}
-      <p><strong>Title:</strong> {course.title}</p>
-      <p><strong>Description:</strong> {course.description}</p>
+      <div className="course-details-container">
+        <h2>Course Details</h2>
+        {error && <p className="course-details-error">{error}</p>}
+        <p><strong>Title:</strong> {course.title}</p>
+        <p><strong>Description:</strong> {course.description}</p>
 
-      <div className="creator-buttons">
-        {isCreator && !editMode && (
-          <div className="creator-buttons-group">
-            <button onClick={() => setEditMode(!editMode)} className="course-button">Edit</button>
-            <button onClick={handleDeleteCourse} className="course-button">Delete</button>
-            <button onClick={handleUploadClick} className="course-button">Upload Materials</button>
-          </div>
-        )}
+        <div className="creator-buttons">
+          {isCreator && !editMode && (
+              <div className="creator-buttons-group">
+                <button onClick={() => setEditMode(!editMode)} className="course-button">Edit</button>
+                <button onClick={handleDeleteCourse} className="course-button">Delete</button>
+                <button onClick={handleUploadClick} className="course-button">Upload Materials</button>
+              </div>
+          )}
 
-        {isCreator && editMode && (
-          <div>
-            <div>
-              <label>New Title:</label>
-              <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required/>
-            </div>
-            <div>
-              <label>New Description:</label>
-              <textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} required/>
-            </div>
-            <button onClick={handleUpdateCourse} className="course-button">Save</button>
-          </div>
-        )}
-      </div>
+          {isCreator && editMode && (
+              <div>
+                <div>
+                  <label>New Title:</label>
+                  <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required/>
+                </div>
+                <div>
+                  <label>New Description:</label>
+                  <textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} required/>
+                </div>
+                <button onClick={handleUpdateCourse} className="course-button">Save</button>
+              </div>
+          )}
+        </div>
 
-      <div className="other-buttons-group">
-        <button onClick={handleGetRecommendations} className="course-button">Get Recommendations</button>
-        <Link to="/course">
-          <button className="course-button">Back to Courses</button>
-        </Link>
-      </div>
 
-      {showRecommendations && recommendations.length > 0 && (
-        <div>
-          <h3>Recommended Courses:</h3>
+        <div className="lessons-section">
+          <h3>Lessons:</h3>
           <ul>
-            {recommendations.map((recCourse) => (
-              <li key={recCourse.id}>
-                <button onClick={() => handleRecommendationClick(recCourse.id)} className="recommendation-link">
-                  {recCourse.title}
-                </button>
-              </li>
+            {lessons.map((lesson) => (
+                <li key={lesson.lesson_id}>
+                  <button onClick={() => viewLesson(lesson.lesson_id)} className="lesson-link">
+                    View Lesson {lesson.lesson_id}
+                  </button>
+                </li>
             ))}
           </ul>
         </div>
-      )}
 
-      <div className="lessons-section">
-        <h3>Lessons:</h3>
-        <ul>
-          {lessons.map((lesson) => (
-            <li key={lesson.lesson_id}>
-              <button onClick={() => viewLesson(lesson.lesson_id)} className="lesson-link">
-                View Lesson {lesson.lesson_id}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+        {selectedLesson && (
+            <div>
+              <h3>Lesson Details:</h3>
+              {lessonType === 'image' &&
+                  <img src={lessonContent} alt="Lesson content" style={{maxWidth: '100%', height: '200px'}}/>}
+              {lessonType === 'text' &&
+                  <textarea value={lessonContent} readOnly style={{width: '100%', height: '200px'}}/>}
+              <button onClick={closeLesson} className="course-button">Close Lesson</button>
 
-      {selectedLesson && (
-        <div>
-          <h3>Lesson Details:</h3>
-          {lessonType === 'image' && <img src={lessonContent} alt="Lesson content" style={{ maxWidth: '100%', height: '200px' }} />}
-          {lessonType === 'text' && <textarea value={lessonContent} readOnly style={{ width: '100%', height: '200px' }} />}
+            </div>
+        )}
+
+        <div className="rating-section">
+          <h3>Rate this course:</h3>
+          {!ratingSubmitted ? (
+              <div>
+                {/*<label>Select Rating:</label>*/}
+                <select value={rating} onChange={(e) => setRating(parseInt(e.target.value))}>
+                  <option value="">Select Rating</option>
+                  <option value={1}>1</option>
+                  <option value={2}>2</option>
+                  <option value={3}>3</option>
+                  <option value={4}>4</option>
+                  <option value={5}>5</option>
+                </select>
+                <button onClick={handleRateCourse} className="course-button">Submit Rating</button>
+              </div>
+          ) : (
+              <p>Thank you for rating this course!</p>
+          )}
         </div>
-      )}
 
-      <div className="rating-section">
-        <h3>Rate this course:</h3>
-        {!ratingSubmitted ? (
-          <div>
-            <label>Select Rating:</label>
-            <select value={rating} onChange={(e) => setRating(parseInt(e.target.value))}>
-              <option value="">--Select Rating--</option>
-              <option value={1}>1</option>
-              <option value={2}>2</option>
-              <option value={3}>3</option>
-              <option value={4}>4</option>
-              <option value={5}>5</option>
-            </select>
-            <button onClick={handleRateCourse} className="course-button">Submit Rating</button>
-          </div>
-        ) : (
-          <p>Thank you for rating this course!</p>
+        {showUploadForm && (
+            <div className="upload-form">
+              <input type="file" onChange={handleFileChange}/>
+              <button onClick={handleFileUpload} className="course-button">Upload File</button>
+              <button onClick={handleUploadCancel} className="course-button">Cancel</button>
+            </div>
+        )}
+
+        <div className="other-buttons-group">
+          <button onClick={handleGetRecommendations} className="course-button">Get Recommendations</button>
+          <Link to="/course">
+            <button className="course-button">Back to Courses</button>
+          </Link>
+        </div>
+
+        {showRecommendations && recommendations.length > 0 && (
+            <div>
+              <h3>Recommended Courses:</h3>
+              <ul>
+                {recommendations.map((recCourse) => (
+                    <li key={recCourse.id}>
+                      <button onClick={() => handleRecommendationClick(recCourse.id)} className="recommendation-link">
+                        {recCourse.title}
+                      </button>
+                    </li>
+                ))}
+              </ul>
+            </div>
         )}
       </div>
-
-      {showUploadForm && (
-        <div className="upload-form">
-          <input type="file" onChange={handleFileChange} />
-          <button onClick={handleFileUpload} className="course-button">Upload File</button>
-          <button onClick={handleUploadCancel} className="course-button">Cancel</button>
-        </div>
-      )}
-    </div>
   );
 }
 

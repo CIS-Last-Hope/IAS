@@ -1,3 +1,27 @@
+.error-notification {
+  position: fixed;
+  bottom: 20px; /* Расположение внизу экрана */
+  right: 20px;  /* Расположение справа экрана */
+  background-color: #f44336; /* Красный цвет фона */
+  color: white; /* Белый текст */
+  padding: 15px 20px; /* Внутренний отступ */
+  border-radius: 5px; /* Закругленные углы */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Тень для объемности */
+  z-index: 1000; /* Приоритет на экране */
+  font-size: 16px; /* Размер текста */
+  animation: fadein 0.5s, fadeout 0.5s 9.5s; /* Появление и исчезновение через 10 сек */
+}
+
+@keyframes fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeout {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 .course-list-container {
   max-width: 1200px; /* Ширина контейнера */
   margin: 50px auto;
@@ -128,6 +152,57 @@ h2 {
 .other-buttons-group button:hover {
   opacity: 0.8;
   background-color: #0056b3; /* Цвет фона при наведении */
+}
+.lesson-link {
+  display: inline-block;
+  padding: 8px 16px; /* Уменьшенный padding */
+  margin: 5px 0; /* Уменьшенный отступ сверху и снизу */
+  background-color: #007bff; /* Зеленый фон */
+  color: white; /* Белый текст */
+  border: none;
+  border-radius: 5px;
+  font-size: 14px; /* Уменьшенный размер текста */
+  /*font-weight: bold;*/
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.lesson-link:hover {
+  background-color: #0056b3; /* Более темный зеленый при наведении */
+  transform: scale(1.05); /* Легкое увеличение */
+}
+
+.lesson-link:active {
+  background-color: #0056b3; /* Цвет при нажатии */
+  transform: scale(1); /* Возврат к обычному размеру */
+}
+
+.recommendation-link {
+  display: inline-block;
+  padding: 8px 16px; /* Padding, чтобы кнопки были компактными */
+  margin: 5px 0; /* Отступ между кнопками */
+  background-color: #007bff; /* Голубой фон */
+  color: white; /* Белый текст */
+  border: none;
+  border-radius: 5px; /* Закругленные углы */
+  font-size: 14px; /* Размер шрифта как у других кнопок */
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.recommendation-link:hover {
+  background-color: #0056b3; /* Более темный синий при наведении */
+  transform: scale(1.05); /* Легкое увеличение */
+}
+
+.recommendation-link:active {
+  background-color: #0056b3; /* Цвет при нажатии */
+  transform: scale(1); /* Возврат к обычному размеру */
 }
 
 /* Специфичные стили для кнопок создателя */
