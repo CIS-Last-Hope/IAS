@@ -4,8 +4,8 @@ import shutil
 import uuid
 from io import BytesIO
 from pathlib import Path
-import aspose.slides as slides
-import aspose.pydrawing as drawing
+# import aspose.slides as slides
+# import aspose.pydrawing as drawing
 import vt
 from ..settings import settings
 from concurrent.futures import ThreadPoolExecutor
@@ -106,9 +106,9 @@ class CourseService:
         with file_path.open("wb") as f:
             f.write(file.file.read())
 
-        mime_type = await get_mime_type(file_path)
-        if mime_type == 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
-            file_path = await pptx_to_images(file_path, original_filename, course_id)
+        # mime_type = await get_mime_type(file_path)
+        # if mime_type == 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+        #     file_path = await pptx_to_images(file_path, original_filename, course_id)
 
         lessons = self.session.query(tables.Lesson).filter(
             (tables.Lesson.course_id == course_id)
@@ -411,17 +411,17 @@ async def get_mime_type(file_path: Path) -> str:
     return extension_to_mime.get(pathlib.Path(file_path).suffix.lower(), 'application/octet-stream')
 
 
-async def pptx_to_images(pptx_path: str, pptx_filename: str, course_id: int):
-    pptx_filename = pptx_filename.replace(".pptx", "")
-    pptx_dir = UPLOAD_DIR / str(course_id) / pptx_filename
-    pptx_dir.mkdir(exist_ok=True, parents=True)
-    with slides.Presentation(str(pptx_path)) as presentation:
-        i = 0
-        for slide in presentation.slides:
-            slide.get_thumbnail(2, 2).save(f"{pptx_dir}/{i}.jpg".format(str(slide.slide_number)),
-                                           drawing.imaging.ImageFormat.jpeg)
-            i += 1
-    return pptx_dir
+# async def pptx_to_images(pptx_path: str, pptx_filename: str, course_id: int):
+#     pptx_filename = pptx_filename.replace(".pptx", "")
+#     pptx_dir = UPLOAD_DIR / str(course_id) / pptx_filename
+#     pptx_dir.mkdir(exist_ok=True, parents=True)
+#     with slides.Presentation(str(pptx_path)) as presentation:
+#         i = 0
+#         for slide in presentation.slides:
+#             slide.get_thumbnail(2, 2).save(f"{pptx_dir}/{i}.jpg".format(str(slide.slide_number)),
+#                                            drawing.imaging.ImageFormat.jpeg)
+#             i += 1
+#     return pptx_dir
 
 def antivirus(file_content: BytesIO):
     client = vt.Client(settings.api_key_antivirus)

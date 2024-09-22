@@ -13,3 +13,6 @@ pathlib~=1.0.1
 vt-py
 flower
 gunicorn
+sentence-transformers
+pillow
+pypng

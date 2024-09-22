@@ -26,7 +26,7 @@ from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from .course import get_mime_type, pptx_to_images
+from .course import get_mime_type
 from .. import (
     models,
     tables,
