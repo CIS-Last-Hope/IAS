@@ -16,3 +16,5 @@ gunicorn
 sentence-transformers
 pillow
 pypng
+aspose.slides
+
