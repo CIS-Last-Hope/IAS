@@ -84,6 +84,22 @@ h2 {
   gap: 10px;
   margin-top: 20px;
 }
+.close-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: white;
+  text-align: center;
+  font-size: 14px;
+}
+.close-button {
+  background-color: #dc3545;
+}
+
+.close-button:hover {
+  background-color: #c82333;
+}
 
 .course-logout-button,
 .course-button {

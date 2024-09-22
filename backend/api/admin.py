@@ -12,6 +12,8 @@ from ..models.course import Course, CourseUpdate, BaseCourse, Lesson
 
 from ..services.admin import get_current_user, AuthAdminService, AdminModeration
 
+from typing import List
+
 router = APIRouter(
     prefix='/admin',
 )
@@ -37,6 +39,10 @@ async def create_course(course_data: BaseCourse, admin_service: AdminModeration 
                         admin: Admin = Depends(get_current_user)):
     return await admin_service.create_course(course_data)
 
+
+@router.get('/admin/course/', response_model=List[Course])
+async def read_all_courses(admin_service: AdminModeration = Depends(), admin: Admin = Depends(get_current_user)):
+    return await admin_service.read_all_courses()
 
 @router.get('/admin/course/read/', response_model=Course)
 async def read_course(title: str, admin_service: AdminModeration = Depends(), admin: Admin = Depends(get_current_user)):
@@ -66,6 +72,11 @@ async def read_lesson(course_id: int, lesson_id: int, admin_service: AdminModera
     file, mime_type = await admin_service.read_lesson(course_id, lesson_id)
     return StreamingResponse(content=file, media_type=mime_type)
 
+@router.get('/admin/{course_id}/lessons')
+async def get_all_lessons_in_course(course_id: int,
+                                    admin: Admin = Depends(get_current_user),
+                                    admin_service: AdminModeration = Depends()):
+    return await admin_service.get_all_lessons(course_id)
 
 @router.delete('/admin/lesson/delete/', status_code=status.HTTP_204_NO_CONTENT)
 async def delete_lesson(course_id: int, lesson_id: int, admin_service: AdminModeration = Depends(),

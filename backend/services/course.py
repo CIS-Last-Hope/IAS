@@ -405,6 +405,7 @@ async def get_mime_type(file_path: Path) -> str:
         '.mp4': 'video/mp4',
         '.mp3': 'audio/mpeg',
         '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        '.ppt': 'application/vnd.ms-powerpoint',
     }
 
     return extension_to_mime.get(pathlib.Path(file_path).suffix.lower(), 'application/octet-stream')
@@ -421,7 +422,6 @@ async def pptx_to_images(pptx_path: str, pptx_filename: str, course_id: int):
                                            drawing.imaging.ImageFormat.jpeg)
             i += 1
     return pptx_dir
-
 
 def antivirus(file_content: BytesIO):
     client = vt.Client(settings.api_key_antivirus)
