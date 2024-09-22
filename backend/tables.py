@@ -76,7 +76,7 @@ class Admin(Base):
     password_hash = sa.Column(sa.String)
 
 
-Base.metadata.create_all(engine)
+Base.metadata.create_all(engine, checkfirst=True)
 admin = User(
     email='admin',
     username='admin',
