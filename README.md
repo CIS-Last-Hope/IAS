@@ -1,4 +1,4 @@
-# Как запускать бэк
+# How to run
 Создаёте .env файл в папке /backend(в итоге у вас получится /backend/.env)
 В .env прописываете следующее
 `
@@ -21,6 +21,5 @@ raise exception
 ```
 Далее запускаете
 ```
-docker build -t backend .
-docker run -d -p <<любой свобоный порт>>:8000 backend
+docker-compose up
 ```
