@@ -4,8 +4,8 @@ import shutil
 import uuid
 from io import BytesIO
 from pathlib import Path
-import aspose.slides as slides
-import aspose.pydrawing as drawing
+# import aspose.slides as slides
+# import aspose.pydrawing as drawing
 import vt
 from ..settings import settings
 from concurrent.futures import ThreadPoolExecutor
@@ -19,7 +19,7 @@ from .. import tables, models
 from ..database import get_session
 
 from typing import List
-#from sentence_transformers import SentenceTransformer, util
+from sentence_transformers import SentenceTransformer, util
 
 executor = ThreadPoolExecutor(max_workers=4)
 
@@ -27,7 +27,7 @@ UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True, parents=True)
 
 # Загрузка предварительно обученной модели Sentence-BERT
-#sbert_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+sbert_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
 
 class CourseService:
@@ -85,15 +85,15 @@ class CourseService:
         course_dir = UPLOAD_DIR / str(course_id)
         course_dir.mkdir(exist_ok=True, parents=True)
 
-        exception = HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="The uploaded file contains a virus and cannot be processed."
-        )
+        # exception = HTTPException(
+        #     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        #     detail="The uploaded file contains a virus and cannot be processed."
+        # )
 
-        loop = asyncio.get_event_loop()
-        virus = await loop.run_in_executor(executor, antivirus, BytesIO(file.file.read()))
-        if virus:
-            raise exception
+        # loop = asyncio.get_event_loop()
+        # virus = await loop.run_in_executor(executor, antivirus, BytesIO(file.file.read()))
+        # if virus:
+        #     raise exception
 
         original_filename = file.filename
         file_path = course_dir / original_filename
@@ -106,9 +106,9 @@ class CourseService:
         with file_path.open("wb") as f:
             f.write(file.file.read())
 
-        mime_type = await get_mime_type(file_path)
-        if mime_type == 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
-            file_path = await pptx_to_images(file_path, original_filename, course_id)
+        # mime_type = await get_mime_type(file_path)
+        # if mime_type == 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+        #     file_path = await pptx_to_images(file_path, original_filename, course_id)
 
         lessons = self.session.query(tables.Lesson).filter(
             (tables.Lesson.course_id == course_id)
@@ -312,46 +312,46 @@ class CourseService:
             file = path.open('rb')
         return StreamingResponse(content=file, media_type=mime_type)
 
-    # async def recommend_courses(self, course_id: int) -> List[models.Course]:
-    #     # Получаем текущий курс
-    #     course = self.session.query(tables.Course).filter(
-    #         tables.Course.id == course_id
-    #     ).first()
-    #
-    #     if not course:
-    #         raise HTTPException(
-    #             status_code=404,
-    #             detail="Course not found"
-    #         )
-    #
-    #     # Получаем все курсы, кроме текущего
-    #     all_courses = self.session.query(tables.Course).filter(
-    #         tables.Course.id != course_id
-    #     ).all()
-    #
-    #     if not all_courses:
-    #         raise HTTPException(
-    #             status_code=404,
-    #             detail="No other courses found"
-    #         )
-    #
-    #     # Собираем текстовые описания всех курсов (включая текущий)
-    #     descriptions = [course.description] + [other_course.description for other_course in all_courses]
-    #
-    #     # Получаем эмбеддинги текстов с помощью Sentence-BERT
-    #     embeddings = sbert_model.encode(descriptions, convert_to_tensor=True)
-    #
-    #     # Вычисляем косинусное сходство между текущим курсом и всеми остальными курсами
-    #     similarity_scores = util.pytorch_cos_sim(embeddings[0], embeddings[1:])
-    #
-    #     # Получаем индексы курсов, с которыми текущий курс имеет наибольшее сходство
-    #     similar_indices = similarity_scores.argsort(descending=True)[0][:3].cpu().numpy()
-    #     # берем 3 наиболее похожих курсов
-    #
-    #     # Формируем список рекомендуемых курсов
-    #     recommended_courses = [all_courses[idx] for idx in similar_indices]
-    #
-    #     return recommended_courses
+    async def recommend_courses(self, course_id: int) -> List[models.Course]:
+        # Получаем текущий курс
+        course = self.session.query(tables.Course).filter(
+            tables.Course.id == course_id
+        ).first()
+
+        if not course:
+            raise HTTPException(
+                status_code=404,
+                detail="Course not found"
+            )
+
+        # Получаем все курсы, кроме текущего
+        all_courses = self.session.query(tables.Course).filter(
+            tables.Course.id != course_id
+        ).all()
+
+        if not all_courses:
+            raise HTTPException(
+                status_code=404,
+                detail="No other courses found"
+            )
+
+        # Собираем текстовые описания всех курсов (включая текущий)
+        descriptions = [course.description] + [other_course.description for other_course in all_courses]
+
+        # Получаем эмбеддинги текстов с помощью Sentence-BERT
+        embeddings = sbert_model.encode(descriptions, convert_to_tensor=True)
+
+        # Вычисляем косинусное сходство между текущим курсом и всеми остальными курсами
+        similarity_scores = util.pytorch_cos_sim(embeddings[0], embeddings[1:])
+
+        # Получаем индексы курсов, с которыми текущий курс имеет наибольшее сходство
+        similar_indices = similarity_scores.argsort(descending=True)[0][:3].cpu().numpy()
+        # берем 3 наиболее похожих курсов
+
+        # Формируем список рекомендуемых курсов
+        recommended_courses = [all_courses[idx] for idx in similar_indices]
+
+        return recommended_courses
 
     async def rate_course(self, course_id: int, rating: int, user_id: int):
         if rating < 1 or rating > 5:
@@ -405,23 +405,23 @@ async def get_mime_type(file_path: Path) -> str:
         '.mp4': 'video/mp4',
         '.mp3': 'audio/mpeg',
         '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        '.ppt': 'application/vnd.ms-powerpoint',
     }
 
     return extension_to_mime.get(pathlib.Path(file_path).suffix.lower(), 'application/octet-stream')
 
 
-async def pptx_to_images(pptx_path: str, pptx_filename: str, course_id: int):
-    pptx_filename = pptx_filename.replace(".pptx", "")
-    pptx_dir = UPLOAD_DIR / str(course_id) / pptx_filename
-    pptx_dir.mkdir(exist_ok=True, parents=True)
-    with slides.Presentation(str(pptx_path)) as presentation:
-        i = 0
-        for slide in presentation.slides:
-            slide.get_thumbnail(2, 2).save(f"{pptx_dir}/{i}.jpg".format(str(slide.slide_number)),
-                                           drawing.imaging.ImageFormat.jpeg)
-            i += 1
-    return pptx_dir
-
+# async def pptx_to_images(pptx_path: str, pptx_filename: str, course_id: int):
+#     pptx_filename = pptx_filename.replace(".pptx", "")
+#     pptx_dir = UPLOAD_DIR / str(course_id) / pptx_filename
+#     pptx_dir.mkdir(exist_ok=True, parents=True)
+#     with slides.Presentation(str(pptx_path)) as presentation:
+#         i = 0
+#         for slide in presentation.slides:
+#             slide.get_thumbnail(2, 2).save(f"{pptx_dir}/{i}.jpg".format(str(slide.slide_number)),
+#                                            drawing.imaging.ImageFormat.jpeg)
+#             i += 1
+#     return pptx_dir
 
 def antivirus(file_content: BytesIO):
     client = vt.Client(settings.api_key_antivirus)

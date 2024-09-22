@@ -13,6 +13,8 @@ from fastapi import (
     status, UploadFile,
 )
 
+from typing import List
+
 from fastapi.security import OAuth2PasswordBearer
 from jose import (
     JWTError,
@@ -24,7 +26,7 @@ from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from .course import get_mime_type, pptx_to_images
+from .course import get_mime_type
 from .. import (
     models,
     tables,
@@ -194,6 +196,12 @@ class AdminModeration:
             raise HTTPException(status_code=404, detail="Record not found")
         return course
 
+    async def read_all_courses(self) -> List[models.Course]:
+        courses = self.session.query(tables.Course).all()  # Получаем все курсы
+        if not courses:
+            raise HTTPException(status_code=404, detail="No courses found")
+        return courses
+
     async def update_course(self, title: str, course_data: models.CourseUpdate) -> models.Course:
         course = self.session.query(tables.Course).filter(
             (tables.Course.title == title)
@@ -280,6 +288,12 @@ class AdminModeration:
         self.session.commit()
 
         return lesson
+
+    async def get_all_lessons(self, course_id: int) -> List[models.Lesson]:
+        lessons = self.session.query(tables.Lesson).filter(
+            tables.Lesson.course_id == course_id,
+        ).all()
+        return [models.Lesson.from_orm(lesson) for lesson in lessons]
 
     async def read_lesson(self, course_id: int, lesson_id: int):
         lesson = self.session.query(tables.Lesson).filter(

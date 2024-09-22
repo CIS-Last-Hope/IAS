@@ -13,5 +13,8 @@ pathlib~=1.0.1
 vt-py
 flower
 gunicorn
-aspose.slides
 sentence-transformers
+pillow
+pypng
+aspose.slides
+

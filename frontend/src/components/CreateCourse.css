@@ -1,0 +1,83 @@
+/* src/components/CreateCourse.css */
+
+.create-course-container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  color: #333;
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.create-course-error {
+  color: red;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.create-course-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.form-control {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+textarea.form-control {
+  height: 100px;
+  resize: vertical;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+}
+
+.create-course-button, .cancel-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+}
+
+.create-course-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.create-course-button:hover {
+  background-color: #218838;
+}
+
+.cancel-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.cancel-button:hover {
+  background-color: #c82333;
+}
