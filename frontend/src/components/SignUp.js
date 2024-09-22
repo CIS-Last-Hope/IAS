@@ -20,7 +20,7 @@ function SignUp() {
         password: password
       };
 
-      const response = await axios.post('http://localhost:8000/auth/sign-up', userData);
+      const response = await axios.post('http://51.250.6.237:8000/auth/sign-up', userData);
       const session_id = response.data.session_id;
       fetchQrCode(session_id);
       setError('');
@@ -32,7 +32,7 @@ function SignUp() {
 
   const fetchQrCode = async (session_id) => {
     try {
-      const response = await axios.get(`http://localhost:8000/auth/qr?session_id=${session_id}`, { responseType: 'blob' });
+      const response = await axios.get(`http://51.250.6.237:8000/auth/qr?session_id=${session_id}`, { responseType: 'blob' });
       const qrCodeUrl = URL.createObjectURL(response.data);
       setQrCode(qrCodeUrl);
     } catch (error) {

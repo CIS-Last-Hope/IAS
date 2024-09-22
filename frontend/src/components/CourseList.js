@@ -17,7 +17,7 @@ function CourseList() {
       }
 
       try {
-        const response = await axios.get(`http://localhost:8000/course/?token=${token}`);
+        const response = await axios.get(`http://51.250.6.237:8000/course/?token=${token}`);
         setCourses(response.data);
       } catch (error) {
         console.error(error.response?.data);

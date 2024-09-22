@@ -22,7 +22,7 @@ function UploadMaterials() {
     formData.append('file', file);
 
     try {
-      await axios.post(`http://localhost:8000/course/${courseId}/materials/upload?token=${token}`, formData, {
+      await axios.post(`http://51.250.6.237:8000/course/${courseId}/materials/upload?token=${token}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

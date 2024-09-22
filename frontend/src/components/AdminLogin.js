@@ -17,7 +17,7 @@ function AdminLogin() {
       params.append('password', password);
 
       const response = await axios.post(
-        'http://localhost:8000/admin/sign-in/',
+        'http://51.250.6.237:8000/admin/sign-in/',
         params,
         {
           headers: {

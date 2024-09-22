@@ -14,7 +14,7 @@ function DownloadMaterials() {
     }
 
     try {
-      const response = await axios.get(`http://localhost:8000/course/${courseId}/materials/download?token=${token}`, {
+      const response = await axios.get(`http://51.250.6.237:8000/course/${courseId}/materials/download?token=${token}`, {
         responseType: 'blob', // Указываем тип ответа как blob (для скачивания файла)
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));

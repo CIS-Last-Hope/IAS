@@ -65,7 +65,7 @@ function CourseDetails() {
           return;
         }
 
-        const response = await axios.get(`http://localhost:8000/course/${courseId}?token=${token}`);
+        const response = await axios.get(`http://51.250.6.237:8000/course/${courseId}?token=${token}`);
         setCourse(response.data);
       } catch (error) {
         setError('Failed to fetch course details');
@@ -80,7 +80,7 @@ function CourseDetails() {
           return;
         }
 
-        const response = await axios.get(`http://localhost:8000/auth/current-user?token=${token}`);
+        const response = await axios.get(`http://51.250.6.237:8000/auth/current-user?token=${token}`);
         setCurrentUser(response.data);
       } catch (error) {
         setError('Failed to fetch current user');
@@ -101,7 +101,7 @@ function CourseDetails() {
   const fetchLessons = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:8000/course/${courseId}/lessons?token=${token}`);
+      const response = await axios.get(`http://51.250.6.237:8000/course/${courseId}/lessons?token=${token}`);
       setLessons(response.data);
     } catch (error) {
       setError('Failed to fetch lessons');
@@ -117,7 +117,7 @@ const fetchNextLessonId = async () => {
       return;
     }
 
-    const response = await axios.get(`http://localhost:8000/course/${courseId}/lessons?token=${token}`);
+    const response = await axios.get(`http://51.250.6.237:8000/course/${courseId}/lessons?token=${token}`);
     const lessons = response.data;
 
     // Определение следующего lessonId
@@ -132,7 +132,7 @@ const fetchNextLessonId = async () => {
   const viewLesson = async (lessonId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:8000/course/lesson/${courseId}/${lessonId}?token=${token}`, {
+      const response = await axios.get(`http://51.250.6.237:8000/course/lesson/${courseId}/${lessonId}?token=${token}`, {
         responseType: 'blob', // Получаем бинарные данные
       });
 
@@ -199,7 +199,7 @@ const fetchNextLessonId = async () => {
       formData.append('file', uploadFile);
 
       await axios.post(
-        `http://localhost:8000/course/${courseId}/lesson/upload?lesson_id=${lessonId}&token=${token}`,
+        `http://51.250.6.237:8000/course/${courseId}/lesson/upload?lesson_id=${lessonId}&token=${token}`,
         formData,
         {
           headers: {
@@ -225,7 +225,7 @@ const fetchNextLessonId = async () => {
         return;
       }
 
-      await axios.delete(`http://localhost:8000/course/${courseId}?token=${token}`);
+      await axios.delete(`http://51.250.6.237:8000/course/${courseId}?token=${token}`);
       navigate('/course');
     } catch (error) {
       setError('Failed to delete course');
@@ -242,7 +242,7 @@ const fetchNextLessonId = async () => {
       }
 
       await axios.put(
-        `http://localhost:8000/course/${courseId}?token=${token}`,
+        `http://51.250.6.237:8000/course/${courseId}?token=${token}`,
         { title: newTitle, description: newDescription }
       );
       setCourse({ ...course, title: newTitle, description: newDescription });
@@ -261,7 +261,7 @@ const fetchNextLessonId = async () => {
       }
 
       await axios.post(
-        `http://localhost:8000/course/${courseId}/rate?token=${token}`,
+        `http://51.250.6.237:8000/course/${courseId}/rate?token=${token}`,
         { rating: rating }
       );
 
@@ -279,7 +279,7 @@ const fetchNextLessonId = async () => {
         return;
       }
 
-      const response = await axios.get(`http://localhost:8000/course/${courseId}/recommendations?token=${token}`);
+      const response = await axios.get(`http://51.250.6.237:8000/course/${courseId}/recommendations?token=${token}`);
       setRecommendations(response.data);
       setShowRecommendations(true); // Показываем рекомендации после успешного получения
     } catch (error) {
