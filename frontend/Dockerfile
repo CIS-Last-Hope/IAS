@@ -1,29 +1,32 @@
 # Используем базовый образ Node.js для сборки
 FROM node:18 as build
 
-# Устанавливаем рабочую директорию внутри контейнера
+# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем package.json и package-lock.json из папки frontend для установки зависимостей
+# Копируем package.json и package-lock.json для установки зависимостей
 COPY package.json package-lock.json ./
 
 # Устанавливаем зависимости
 RUN npm install
 
-# Копируем все файлы приложения из папки frontend
-COPY / ./
+# Копируем исходный код
+COPY . .
 
-# Собираем приложение для продакшн-режима
+# Собираем React-приложение для продакшн
 RUN npm run build
 
-# Используем nginx для сервировки статических файлов
+# Используем Nginx для сервировки собранных файлов
 FROM nginx:alpine
 
-# Копируем собранные файлы React-приложения из предыдущего этапа в папку nginx
+# Копируем собранные файлы React в Nginx
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Экспонируем порт 80 для доступа к приложению
+# Копируем конфигурацию Nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Открываем порт 80
 EXPOSE 80
 
-# Запускаем nginx
+# Запускаем Nginx
 CMD ["nginx", "-g", "daemon off;"]
