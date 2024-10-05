@@ -17,7 +17,7 @@ function CourseList() {
       }
 
       try {
-        const response = await axios.get(`http://localhost:8000/course/?token=${token}`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/course/?token=${token}`);
         setCourses(response.data);
       } catch (error) {
         console.error(error.response?.data);

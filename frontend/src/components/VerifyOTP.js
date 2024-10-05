@@ -13,7 +13,7 @@ function VerifyOTP({ sessionId }) {
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`http://localhost:8000/auth/verify-otp?session_id=${sessionId}&otp_code=${otpCode}`);
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/verify-otp?session_id=${sessionId}&otp_code=${otpCode}`);
       const token = response.data.access_token;
       if (token) {
         localStorage.setItem('token', token);

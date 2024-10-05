@@ -17,7 +17,7 @@ function AdminLogin() {
       params.append('password', password);
 
       const response = await axios.post(
-        'http://localhost:8000/admin/sign-in/',
+        `${process.env.REACT_APP_API_URL}/admin/sign-in/`,
         params,
         {
           headers: {
