@@ -15,7 +15,7 @@ function SignIn() {
   const handleSignIn = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://51.250.6.237:8000/auth/sign-in', new URLSearchParams({
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/sign-in`, new URLSearchParams({
         username,
         password
       }));

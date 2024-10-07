@@ -18,7 +18,7 @@ function CreateCourse() {
     }
 
     try {
-      const response = await axios.post(`http://51.250.6.237:8000/course/create?token=${token}`,
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/course/create?token=${token}`,
         { title, description }
       );
       navigate('/course');

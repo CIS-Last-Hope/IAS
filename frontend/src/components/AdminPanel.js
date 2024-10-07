@@ -21,7 +21,7 @@ function AdminPanel() {
   const fetchCourses = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://51.250.6.237:8000/admin/admin/course/', {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/admin/course/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -36,7 +36,7 @@ function AdminPanel() {
   const fetchLessons = async (courseId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://51.250.6.237:8000/admin/admin/${courseId}/lessons/`, {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/admin/${courseId}/lessons/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -51,7 +51,7 @@ function AdminPanel() {
   const fetchNextLessonId = async (courseId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://51.250.6.237:8000/admin/admin/${courseId}/lessons`, {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/admin/${courseId}/lessons`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -69,7 +69,7 @@ function AdminPanel() {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://51.250.6.237:8000/admin/admin/course/create`,
+        `${process.env.REACT_APP_API_URL}/admin/admin/course/create`,
         { title: newCourseTitle, description: newCourseDescription },
         {
           headers: {
@@ -89,7 +89,7 @@ function AdminPanel() {
   const handleDeleteCourse = async (courseTitle) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://51.250.6.237:8000/admin/admin/course/delete/?title=${courseTitle}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/admin/admin/course/delete/?title=${courseTitle}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -105,7 +105,7 @@ function AdminPanel() {
   const handleDeleteLesson = async (courseId, lessonId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://51.250.6.237:8000/admin/admin/lesson/delete/?course_id=${courseId}&lesson_id=${lessonId}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/admin/admin/lesson/delete/?course_id=${courseId}&lesson_id=${lessonId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -134,7 +134,7 @@ function AdminPanel() {
     try {
       const token = localStorage.getItem('token');
       await axios.put(
-        `http://51.250.6.237:8000/admin/admin/course/update/?title=${courseTitle}`,
+        `${process.env.REACT_APP_API_URL}/admin/admin/course/update/?title=${courseTitle}`,
         { title: updatedCourseTitle, description: updatedCourseDescription },
         {
           headers: {
@@ -164,7 +164,7 @@ function AdminPanel() {
       formData.append('file', file);
       // formData.append('lesson_id', nextLessonId); // Передаем следующий lesson_id
 
-      await axios.post(`http://51.250.6.237:8000/admin/admin/lesson/create/?course_id=${courseId}&lesson_id=${nextLessonId}`, formData, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/admin/admin/lesson/create/?course_id=${courseId}&lesson_id=${nextLessonId}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
